@@ -1,0 +1,2022 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <!-- Global site tag (gtag.js) - Google Analytics -->
+    <script
+      async
+      src="https://www.googletagmanager.com/gtag/js?id=UA-152809378-3"
+    ></script>
+    <script async src="https://www.google-analytics.com/analytics.js"></script>
+
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag() {
+        dataLayer.push(arguments);
+      }
+      gtag("js", new Date());
+
+      gtag("config", "UA-152809378-3");
+
+      window.ga =
+        window.ga ||
+        function() {
+          (ga.q = ga.q || []).push(arguments);
+        };
+      ga.l = +new Date();
+      ga("create", "UA-152809378-3", "auto");
+      ga("send", "pageview");
+
+      var captureOutboundLink = function(url) {
+        ga("send", "event", "outbound", "click", url, {
+          transport: "beacon",
+          hitCallback: function() {
+            document.location = url;
+          }
+        });
+      };
+
+      var loc = window.location.href + "";
+      if (loc.indexOf("http://") == 0) {
+        window.location.href = loc.replace("http://", "https://");
+      }
+    </script>
+
+    <link rel="manifest" href="/manifest.json" />
+    <link rel="canonical" href="https://quickie.snow-intel.com" />
+    <meta
+      name="google-site-verification"
+      content="2kGJFI1-GkmO1_Nzk1Wghiz3Eb2gLwlUQtxQl99VQbA"
+    />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black" />
+    <meta name="apple-mobile-web-app-title" content="Snow Quickie PWA" />
+    <meta property="og:url" content="https://quickie.snow-intel.com" />
+    <meta property="og:title" content="SnoTel Dashboard By Snow Intel" />
+    <meta
+      property="og:description"
+      content="An app to see SnoTel data, featuring Colorado."
+    />
+    <meta property="og:type" content="website" />
+    <meta
+      property="og:image"
+      content="https://cdn.glitch.com/79a8371f-8b19-442a-8cef-9def4343f601%2Fshowoff.png?v=1586529016674"
+    />
+    <link
+      rel="apple-touch-icon"
+      href="https://cdn.glitch.com/79a8371f-8b19-442a-8cef-9def4343f601%2FSnow%20Intel%20Icon%20appl.png?v=1585871966505"
+    />
+
+    <title>SnoTel Backcountry Snow Conditions By Snow Intel</title>
+    <meta
+      name="description"
+      content="App for NRCS SnoTel data. Check backcountry snow conditions and weather as measured by NRCS SnoTel stations. Colorado is featured."
+    />
+    <meta
+      name="keywords"
+      content="NRCS, Snotel, SnoTel, backcountry, snow, snowfall, snow depth, CO, Colorado"
+    />
+    <meta name="theme-color" content="#cccccc" />
+
+    <link
+      id="favicon"
+      rel="icon"
+      href="https://cdn.glitch.com/79a8371f-8b19-442a-8cef-9def4343f601%2Fgh.ico?v=1604349216498"
+      type="image/x-icon"
+    />
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="author" content="Brian Fishman" />
+
+    <link rel="stylesheet" href="/style.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"
+    />
+
+    <script src="KoolChartLicense.js">
+    </script>
+<script src="https://www.koolchart.com/demo/KoolChart/JS/KoolChart.js"></script>
+    
+    <link rel="stylesheet" href="https://www.koolchart.com/demo/KoolChart/Assets/Css/KoolChart.css"/>
+    <!-- Add the slick-theme.css if you want default styling -->
+    <link
+      rel="stylesheet"
+      type="text/css"
+      href="//cdn.jsdelivr.net/npm/slick-carousel@1.8.1/slick/slick.css"
+    />
+    <!-- Add the slick-theme.css if you want default styling -->
+    <link
+      rel="stylesheet"
+      type="text/css"
+      href="//cdn.jsdelivr.net/npm/slick-carousel@1.8.1/slick/slick-theme.css"
+    />
+    <link
+      href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <script
+      src="https://code.jquery.com/jquery-2.2.0.min.js"
+      type="text/javascript"
+    ></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
+
+    <style>
+      [draggable=true] {
+  cursor: move;
+}
+      /* Set the size of the div element that contains the map */
+      #map {
+        height: 80%; /* The height is 400 pixels */
+        width: 100%; /* The width is the width of the web page */
+        left: -0vh;
+      }
+      #legend_title{
+        margin-top: 5px;
+       margin-bottom: 5px;
+      }
+      
+      #legenddiv {
+        right: 10px;
+        top: 20vh;
+        width: 40px;
+        z-index: 10;
+        position: fixed;
+        background-color: white;
+        font-size: 10px;
+        text-align: center;
+       border-radius: 2px;
+        margin-bottom: 10px;
+      }
+
+      /* your colors */
+      .legend .grow {
+        height: 10px;
+        margin-left: 5%;
+        width: 90%;
+        display: inline-flex;
+      }
+      .legend .trow {
+        height: 10px;
+        width: 40%;
+        margin: 1px;
+      }
+      #L5 {
+        background-color: #FFFFFF;
+      }
+      #L4 {
+        background-color: #E5E5E5;
+      }
+      #L3 {
+        background-color: #CBCBCB;
+      }
+      #L2 {
+        background-color: #CB9898;
+      }
+      #L1 {
+        background-color: #E54C4C;
+      }
+      #L0 {
+        background-color: #FF0000;
+      }
+
+      .alert {
+        top: 10%;
+        left: 30%;
+        width: 40%;
+        height: 10%;
+        padding-top: 2.5%;
+      }
+      #Data_Title {
+        position: fixed;
+        display: inline-block;
+        width: 50%;
+        height: 5%;
+        top: 85%;
+        left: 40%;
+        z-index: 3;
+        font-size: 16px;
+        color: white;
+        text-align: center;
+        font-family: sans-serif;
+        font-weight: 400;
+      }
+      #State_Title {
+        position: fixed;
+        display: block;
+        width: 20%;
+        height: 5%;
+        top: 85%;
+        left: 10%;
+        z-index: 3;
+        font-size: 16px;
+        color: white;
+        text-align: center;
+        font-family: sans-serif;
+        font-weight: 400;
+      }
+      #State_Div {
+        position: absolute;
+        top: 25%;
+        left: 7.5%;
+        height: 100%;
+        width: 25%;
+        /*font-size: 12px;
+  color: white;
+  transform: translate(-50%,-50%);
+  -ms-transform: translate(-50%,-50%);*/
+      }
+      #overlay2 {
+        position: fixed;
+        display: block;
+        width: 100%;
+        height: 7.5%;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: rgba(0, 0, 0, 1);
+        z-index: 3;
+        cursor: pointer;
+      }
+      #install_button {
+        position: fixed;
+        display: block;
+        width: 100%;
+        top: 2.5%;
+        left: 80%;
+      }
+      #overlay3 {
+        position: fixed;
+        text-align: center;
+        display: none;
+        width: 100%;
+        height: 92.5%;
+        top: 7.5%;
+        left: 0;
+        background-color: rgba(0, 0, 0, 1);
+        z-index: 1500;
+        cursor: pointer;
+      }
+      #overlay3_v {
+        position: fixed;
+        text-align: center;
+        display: block;
+        width: 100%;
+        height: 70%;
+        top: 15%;
+        left: 0;
+        background-color: rgba(0, 0, 0, 0);
+        z-index: 1501;
+        cursor: pointer;
+      }
+      #overlay3_vv {
+        position: fixed;
+        text-align: center;
+        display: none;
+        width: 100%;
+        height: 100%;
+        top: 75%;
+        left: 0;
+        background-color: rgba(0, 0, 0, 0);
+        z-index: 1500;
+        cursor: pointer;
+      }
+
+      #overlay {
+        position: fixed;
+        display: block;
+        width: 100%;
+        height: 15%;
+        top: 85%;
+        left: 0;
+        background-color: rgba(0, 0, 0, 1);
+        z-index: 1;
+        cursor: pointer;
+      }
+
+      h1 {
+        position: absolute;
+        padding: 0px;
+        margin: 0px;
+        top: 50%;
+        left: 50%;
+        font-size: 20px;
+        color: white;
+        transform: translate(-50%, -50%);
+        -ms-transform: translate(-50%, -50%);
+      }
+      h2 {
+        position: absolute;
+        top: 40%;
+        left: 50%;
+        font-size: 10px;
+        color: grey;
+        transform: translate(-50%, -50%);
+        -ms-transform: translate(-50%, -50%);
+      }
+
+      /* Tablet or Long Phone Portrait */
+
+      @media only screen and (min-device-height: 700px) and (max-device-height: 900px) and (orientation: portrait) {
+        #overlay3_vv {
+          display: block;
+        }
+        #map {
+          top: 5%;
+          height: 80%; /* The height is 400 pixels */
+          width: 100%; /* The width is the width of the web page */
+        }
+        .alert {
+          padding-top: 1%;
+          top: 8%;
+          left: 2.5%;
+          width: 95%;
+          height: 5%;
+        }
+      }
+
+      @media only screen and (min-device-height: 900px) and (max-device-height: 2000px) and (orientation: portrait) {
+        #map {
+          top: 7.5%;
+          height: 80%; /* The height is 400 pixels */
+          width: 100%; /* The width is the width of the web page */
+        }
+        .alert {
+          top: 8%;
+          left: 25%;
+          width: 50%;
+          height: 5%;
+        }
+      }
+
+      /* Tablet Landscape */
+      /* iPhone X */
+
+      @media only screen and (min-device-width: 600px) and (max-device-width: 1000px) and (max-device-height: 500px) and (orientation: landscape) {
+        #overlay3_vv {
+          display: none;
+        }
+        h2 {
+          display: none;
+        }
+        #map {
+          top: 5%;
+          height: 80%; /* The height is 400 pixels */
+          width: 100%; /* The width is the width of the web page */
+        }
+        .alert {
+          padding-top: 0%;
+          top: 8%;
+          left: 20%;
+          width: 60%;
+          height: 5%;
+        }
+      }
+      /* Long Phone Landscape */
+
+      @media only screen and (min-device-width: 600px) and (max-device-width: 1000px) and (orientation: landscape) {
+        #overlay2 {
+          width: 100%;
+          height: 5%;
+          top: 0%;
+        }
+        #overlay3_vv {
+          display: none;
+        }
+        h1 {
+          position: absolute;
+          top: 50%;
+          font-size: 20px;
+        }
+        #map {
+          top: 5%;
+          height: 80%; /* The height is 400 pixels */
+          width: 100%; /* The width is the width of the web page */
+        }
+        .alert {
+          padding-top: 0%;
+          top: 8%;
+          left: 25%;
+          width: 50%;
+          height: 5%;
+        }
+      }
+
+      @media only screen and (min-device-width: 1000px) and (max-device-width: 2000px) and (max-device-height: 800px) and (orientation: landscape) {
+        #overlay2 {
+          width: 100%;
+          height: 10%;
+        }
+
+        #overlay {
+          width: 100%;
+          height: 25%;
+          top: 75%;
+          left: 0;
+        }
+        #map {
+          top: 10%;
+          left: 0vw;
+          height: 75%; /* The height is 400 pixels */
+          width: 100%; /* The width is the width of the web page */
+        }
+        .alert {
+          top: 12%;
+          left: 30%;
+          width: 40%;
+          height: 5%;
+          padding-top: 0.25%;
+        }
+        #overlay {
+          height: 20%;
+          top: 80%;
+        }
+        #Data_Title {
+          width: 50%;
+          height: 5%;
+          top: 80%;
+          left: 40%;
+        }
+
+        #State_Title {
+          width: 20%;
+          height: 5%;
+          top: 80%;
+          left: 10%;
+        }
+      }
+      @media only screen and (min-device-width: 1000px) and (min-device-height: 800px) and (orientation: landscape) {
+        h1 {
+          font-size: 36px;
+        }
+        h2 {
+          top: 60%;
+        }
+
+        #map {
+          height: 80%; /* The height is 400 pixels */
+          width: 100%; /* The width is the width of the web page */
+          top: 5%;
+          left: 0vh;
+        }
+      }
+
+      /*Small Phone Style*/
+      @media only screen and (min-device-height: 320px) and (max-device-height: 700px) and (orientation: portrait) {
+        .alert {
+          padding-top: 2.5%;
+          padding-left: 0px;
+          top: 9%;
+          left: 2.5%;
+          width: 95%;
+          height: 5%;
+        }
+        #overlay3_vv {
+          display: block;
+        }
+        #overlay {
+          width: 100%;
+          height: 20%;
+          top: 80%;
+        }
+        h2 {
+          display: none;
+        }
+        #map {
+          top: 5%;
+          height: 76%; /* The height is 400 pixels */
+          width: 100%; /* The width is the width of the web page */
+        }
+        #Data_Title {
+          width: 50%;
+          height: 5%;
+          top: 81%;
+          left: 40%;
+        }
+        #State_Title {
+          width: 20%;
+          height: 5%;
+          top: 81%;
+          left: 7.5%;
+        }
+        #State_Div {
+          top: 25%;
+          left: 2.5%;
+          height: 100%;
+          width: 30%;
+        }
+      }
+
+      @media only screen and (min-device-width: 320px) and (max-device-width: 1000px) and (orientation: landscape) {
+        #overlay3_vv {
+          display: none;
+        }
+        #overlay2 {
+          width: 100%;
+          height: 10%;
+        }
+        .alert {
+          padding-top: 0.5%;
+          top: 12%;
+          left: 15%;
+          width: 70%;
+          height: 7.5%;
+        }
+        #overlay {
+          width: 100%;
+          height: 25%;
+          top: 75%;
+          left: 0;
+        }
+        #map {
+          top: 5%;
+          height: 70%; /* The height is 400 pixels */
+          width: 100%; /* The width is the width of the web page */
+        }
+        #Data_Title {
+          width: 50%;
+          height: 5%;
+          top: 75%;
+          left: 40%;
+        }
+
+        #State_Title {
+          width: 20%;
+          height: 5%;
+          top: 75%;
+          left: 10%;
+        }
+      }
+
+      #Today,
+      #OneDay,
+      #FiveDay,
+      #Elevation,
+      #Avg{
+        padding: 10px 0px 10px 0px;
+        background-color: rgba(0, 0, 0, 0.5);
+        font-size: 20px;
+        color: white;
+        text-align: center;
+        display: block;
+        font-family: sans-serif;
+        font-weight: 700;
+        line-height: 1.3;
+        box-sizing: border-box;
+        margin: 0; /*
+	border: 1px solid #aaa;
+	box-shadow: 0 1px 0 1px rgba(0,0,0,.04);*/
+        border-radius: 0.5em;
+      }
+
+      #butInstall {
+        position: fixed;
+        display: block;
+        width: 25%;
+        height: 5%;
+        top: 1.25%;
+        left: 70%;
+        z-index: 3000;
+        font-size: 16px;
+        color: white;
+        text-align: center;
+        display: block;
+        font-family: sans-serif;
+        font-weight: 400;
+        background-color: rgba(0, 0, 0, 0.85);
+      }
+
+      #overlay_text {
+      }
+
+      #car {
+        display: block;
+        width: 50%;
+        /*height: 30%;*/
+        top: 25%;
+        left: 40%;
+        border: 1px solid #aaa;
+        box-shadow: 0 1px 0 1px rgba(0, 0, 0, 0.04);
+        border-radius: 0.5em;
+      }
+
+      #State_Selecter {
+        background-color: rgba(0, 0, 0, 0.5);
+        margin: 0 auto;
+        height: 50px;
+        width: 100%;
+        font-size: 20px;
+        color: white;
+        text-align: center;
+        display: block;
+        font-family: sans-serif;
+        font-weight: 700;
+        line-height: 1.3;
+        padding: 0.6em 1.4em 0.5em 0.8em;
+        max-width: 100px;
+        box-sizing: border-box;
+        border: 1px solid #aaa;
+        box-shadow: 0 1px 0 1px rgba(0, 0, 0, 0.04);
+        border-radius: 0.5em;
+      }
+      #State_Selecter:after {
+        position: absolute;
+        content: "";
+        top: 14px;
+        right: 10px;
+        width: 0;
+        height: 0;
+        border: 6px solid transparent;
+        border-color: #fff transparent transparent transparent;
+      }
+
+      .slick-prev:before {
+        color: #ffffff;
+      }
+      .slick-next:before {
+        color: #ffffff;
+      }
+      .alert {
+        position: fixed;
+        text-align: center;
+        display: none;
+        background-color: rgba(0, 0, 0, 0);
+        z-index: 1503;
+        cursor: pointer;
+        color: #fff;
+        background: #1c1c1c;
+        border-color: #000;
+      }
+      .alert-info {
+        acolor: #31708f;
+        background-color: #d9edf7;
+        border-color: #bce8f1;
+      }
+      .alert {
+        border: 1px solid transparent;
+        border-radius: 4px;
+      }
+      .alert-dismissable .close,
+      .alert-dismissible .close {
+        right: 12px;
+      }
+      .alert-dismissable .close,
+      .alert-dismissible .close {
+        position: relative;
+        top: -2px;
+        right: -21px;
+        color: inherit;
+      }
+      button.close {
+        -webkit-appearance: none;
+        padding: 0;
+        cursor: pointer;
+        background: 0 0;
+        border: 0;
+      }
+      .close {
+        float: right;
+        font-size: 21px;
+        font-weight: 700;
+        line-height: 1;
+        color: #000;
+        text-shadow: 0 1px 0 #fff;
+        filter: alpha(opacity=20);
+        opacity: 0.2;
+        margin-right: 20px;
+      }
+      .alert p {
+        font-size: 16px;
+      }
+
+      .alert a {
+        color: #ffffff;
+        font-size: 14px;
+      }
+      .alert {
+        text-align: center;
+        color: #fff;
+        background: #B02D28;
+        border-color: #000;
+        font-family: clarendon;
+      }
+      #bg_banner_click {
+        width: 100%;
+        height: 100%;
+        position: relative;
+      }
+    </style>
+
+    <script src="https://rawgit.com/moment/moment/2.2.1/min/moment.min.js"></script>
+
+    <script>
+      //Initiate at 0, 1 for shown, 2 for cancelled: 2 to not show ever
+      var BannerShown = 0;
+      var Option = 0;
+      var Selected_Site = "874:CO:SNTL";
+      var Selected_Site_Link;
+      var Selected_SiteName;
+      var Selected_SiteID;
+      var Selected_Site_Triplet;
+      var Selected_Site_HasWind;
+      var map;
+      var state_selected = "CO";
+      var DisplayString;
+      var o3 = "off";
+      var Selected_Elevation = 0;
+      var states = [
+        "CO",
+        "WA",
+        "UT",
+        "CA",
+        "AK",
+        "WY",
+        "MT",
+        "OR",
+        "AZ",
+        "NM",
+        "NV",
+        "ID"
+      ];
+
+      //var allCookies = document.cookie;
+      function getCookie(name) {
+        let cookie = {};
+        document.cookie.split(";").forEach(function(el) {
+          let [k, v] = el.split("=");
+          cookie[k.trim()] = v;
+        });
+        return cookie[name];
+      }
+
+      function set_state_cookie(state) {
+        //var cookie_url = "https://snow-quickie.glitch.me/set_state/" + state;
+        //fetch(cookie_url); // Call the fetch function passing the url of the API as a parameter
+        document.cookie = "state=" + state;
+        return;
+      }
+
+      function changeState() {
+        state_selected = document.getElementById("State_Selecter").value;
+        get_new_map(state_selected, Option);
+        try {
+          set_state_cookie(state_selected);
+          setCookie("myMapCookie", "", 30); 
+          ga("send", "event", "Change State", state_selected, "Cookie Set");
+        } catch (error) {
+          console.log("Unable to Set Cookie for State Selected", error);
+        }
+      }
+
+      function changeData(Option) {
+        change_map_data(Option);
+        get_map_legend(Option);
+      }
+
+      function overlay_on() {
+        document.getElementById("overlay").style.display = "block";
+        document.getElementById("overlay2").style.display = "block";
+        if (BannerShown == 1) {
+          document.getElementById("alerty").style.display = "block";
+          ga("send", "event", "Banner", "Shown", "User Saw It");
+        }
+      }
+      function overlay_off() {
+        document.getElementById("overlay").style.display = "none";
+        document.getElementById("overlay2").style.display = "none";
+        if (document.getElementById("alerty") !== "undefined"){
+        var zzz = document.getElementById("alerty").style.display;
+        if (zzz == "block") {
+          document.getElementById("alerty").style.display = "none";
+        }}
+      }
+      function overlay_3_toggle() {
+        if (o3 == "on") {
+          ga("send", "event", "PWA", "Show Install Info", "Probably iOS");
+          document.getElementById("overlay3").style.display = "none";
+          o3 = "off";
+          return;
+        }
+        if (o3 == "off") {
+          document.getElementById("overlay3").style.display = "block";
+          o3 = "on";
+          return;
+        }
+      }
+
+      function showBanner() {
+        //ga("send", "event", "Banner", "Eligible", "On Page N (20) Seconds");
+        //BannerShown = 1;
+      }
+      
+
+      function addListeners(){
+    document.getElementById('legenddiv').addEventListener('mousedown', mouseDown, true);
+    document.getElementById('legenddiv').addEventListener('touchmove', mouseDown, true);
+    window.addEventListener('mouseup', mouseUp, true);
+    document.getElementById('legenddiv').addEventListener('touchend', mouseUp, true);
+
+}
+
+function mouseUp()
+{
+    window.removeEventListener('mousemove', divMove, true);
+    document.getElementById('legenddiv').removeEventListener('touchmove', divMove, true);
+
+}
+
+function mouseDown(e){
+  e.preventDefault();
+  window.addEventListener('mousemove', divMove, true);
+  document.getElementById('legenddiv').addEventListener('touchmove', divMove, true);
+}
+
+function divMove(e){
+    var div = document.getElementById('legenddiv');
+ var pageX = (e.type.toLowerCase() === 'mousemove')
+                    ? e.clientX
+                    : e.touches[0].pageX;
+  
+   var pageY = (e.type.toLowerCase() === 'mousemove')
+                    ? e.clientY
+                    : e.touches[0].pageY;
+  
+  pageX = pageX - 20;
+  pageY = pageY - 75;
+  
+  //console.log(e.type.toLowerCase());
+  
+  div.style.position = 'absolute';
+  div.style.top =  pageY + 'px';
+  div.style.left = pageX + 'px';
+}
+
+      const isInStandaloneMode = () =>
+        "standalone" in window.navigator && window.navigator.standalone;
+
+      function iOS() {
+        var iDevices = [
+          "iPad Simulator",
+          "iPhone Simulator",
+          "iPod Simulator",
+          "iPad",
+          "iPhone",
+          "iPod"
+        ];
+
+        if (!!navigator.platform) {
+          while (iDevices.length) {
+            if (navigator.platform === iDevices.pop()) {
+              return true;
+            }
+          }
+        }
+
+        return false;
+      }
+    
+      
+      const setWindCharts = async Selected_Site => {
+        
+        urlWindSpeed = "/HourlyData/" + Selected_Site + "/WSPDV";
+        urlGustSpeed = "/HourlyData/" + Selected_Site + "/WSPDX";
+        urlWindDirection = "/HourlyData/" + Selected_Site + "/WDIRV";
+        
+         console.log(Selected_SiteName, Selected_Site);
+        DisplayString =
+          Selected_SiteName + " - " + parseInt(Selected_Elevation) + "ft";
+        
+        const timestamps = [];
+        const WindSpeedData = [];
+        const WindDirData = [];
+        const combinedData = [];
+
+console.log(urlWindSpeed);
+        var rawWindSpeed = await fetchWeather(urlWindSpeed); // Call the fetch function passing the url of the API as a parameter
+        var rawWindDirection = await fetchWeather(urlWindDirection);
+        var rawGustSpeed = await fetchWeather(urlGustSpeed); // Call the fetch function passing the url of the API as a parameter
+
+        
+       // if(rawWindSpeed.length!=rawWindDirection.length) throw "Mismatched Wind Speed and Direction"
+        
+        if (rawWindSpeed){
+        for (dd = 0; dd < rawWindSpeed.length; dd++) {
+          
+                  var obj = {};
+
+          timestamps.push(
+            rawWindSpeed[dd].dateTime.substring(5, rawWindSpeed[dd].dateTime.length)
+          );
+          
+          WindSpeedData.push(parseInt(rawWindSpeed[dd].value));
+          WindDirData.push(parseInt(rawWindDirection[dd].value));
+          obj["date"]=rawWindSpeed[dd].dateTime.substring(5, rawWindSpeed[dd].dateTime.length);
+          obj["speed"]=parseInt(rawWindSpeed[dd].value);
+          obj["degree"]=parseInt(rawWindDirection[dd].value);
+          obj["gust"]=parseInt(rawGustSpeed[dd].value);
+
+          //console.log(obj);
+          
+          combinedData.push(obj);
+        }
+        
+      }
+        console.log(combinedData[1])
+        
+        function chartReadyHandler(id) {
+  document.getElementById(id).setLayout(layoutStr);
+  document.getElementById(id).setData(combinedData);
+}
+
+        var chartVars = "KoolOnLoadCallFunction=chartReadyHandler";
+
+KoolChart.create("chart1", "chartHolder", "", "100%", "100%");
+
+        console.log(combinedData.slice(0,10))
+
+var layoutStr =
+  '<KoolChart>'
+   +'<Options>'
+    +'<Caption text="Wind Direction / Wind Speed"/>'
+   +'</Options>'
+   +'<DateFormatter id="dateFmt" formatString="MM-DD HH:MM"/>'
+   +'<Vector2DChart showDataTips="true" dataTipJsFunction="dataTipFunc">'
+    +'<horizontalAxis>'
+     +'<DateTimeAxis id="hAxis" dataUnits="minutes" labelUnits="days" formatter="{dateFmt}" displayName="Date" alignLabelsToUnits="true" displayLocalTime="true" padding="220"/>'
+    +'</horizontalAxis>'
+    +'<verticalAxis>'
+     +'<LinearAxis maximum="30" minimum="-30" />'
+    +'</verticalAxis>'
++'<series>'
+     +'<Vector2DSeries xField="date" velocityField="gust" degreeField="degree"  displayName="Max Wind">'
+      +'<lineStroke>'
+       +'<Stroke color="#690000"/>'
+      +'</lineStroke>'
+      +'<showDataEffect>'
+       +'<SeriesInterpolate elementOffset="0"/>'
+      +'</showDataEffect>'
+     +'</Vector2DSeries>'
+     +'<Vector2DSeries xField="date" velocityField="speed" degreeField="degree"  displayName="Avg Wind">'
+      +'<lineStroke>'
+       +'<Stroke color="#5587a2"/>'
+      +'</lineStroke>'
+      +'<showDataEffect>'
+       +'<SeriesInterpolate elementOffset="0"/>'
+      +'</showDataEffect>'
+     +'</Vector2DSeries>'
+    +'</series>'
+   +'</Vector2DChart>'
+  +'</KoolChart>';
+      
+        
+        KoolChart.calls("chart1", {
+ "setLayout" : layoutStr,
+ "setData" : combinedData
+ });
+
+      }
+      
+      function dataTipFunc(seriesId, seriesName, index, xName, yName, data, values) {
+          console.log(data);
+        //  console.log(id);
+        
+        var compass = degToCompass(data.degree)
+   
+           return (
+             "Date : " + data.date + "<br/>" +
+             "Avg Wind : " + data.speed + "mph" + "<br/>" +
+             "Max Wind : " + data.gust + "mph" + "<br/>" +
+             "Direction : " + compass
+           );
+
+          function degToCompass(num) {
+    var val = Math.floor((num / 22.5) + 0.5);
+    var arr = ["N", "NNE", "NE", "ENE", "E", "ESE", "SE", "SSE", "S", "SSW", "SW", "WSW", "W", "WNW", "NW", "NNW"];
+    return arr[(val % 16)];
+}
+          
+        }
+      
+      async function fetchWeather(URL) {
+        var jsona;
+        const response = await fetch(URL);
+        try {
+          jsona = await response.json();
+        } catch (err) {
+          //returnToMap();
+          //alert("Failed To Retreive Station");
+          return (err)
+        }
+
+        return response.ok ? jsona : Promise.reject(jsona);
+      }
+      let myChart;
+
+      const setData = async Selected_Site => {
+        console.log(Selected_SiteName, Selected_Site);
+        DisplayString =
+          Selected_SiteName + " - " + parseInt(Selected_Elevation) + "ft";
+
+        const ctx = document.getElementById("snowChart");
+
+        if (myChart) myChart.clear();
+        //try();
+        //const data = await getData(Selected_Site);
+        urlSNWD = "/HourlyData/" + Selected_Site + "/SNWD";
+        urlTOBS = "/HourlyData/" + Selected_Site + "/TOBS";
+        
+        const timestamps = [];
+        const SnowDepthData = [];
+
+        var rawSNWD = await fetchWeather(urlSNWD); // Call the fetch function passing the url of the API as a parameter
+        var rawTOBS = await fetchWeather(urlTOBS);
+
+        var dd;
+        
+        if (rawSNWD){
+        for (dd = 0; dd < rawSNWD.length; dd++) {
+          //console.log(rawSNWD[dd]);
+          timestamps.push(
+            rawSNWD[dd].dateTime.substring(5, rawSNWD[dd].dateTime.length)
+          );
+
+          if (rawSNWD[dd].value >= 0) {
+            SnowDepthData.push(parseInt(rawSNWD[dd].value));
+          } else if (rawSNWD[dd].value >= -10) {
+            SnowDepthData.push(0);
+          } else SnowDepthData.push(undefined);
+        }
+
+        //fetch(urlTOBS) // Call the fetch function passing the url of the API as a parameter
+
+        //console.log(dataSNWD);
+        //data =JSON.parse(data);
+        //const snowTelData = [];
+        const AirTempData = [];
+        const AirTempColor = [];
+
+        const gridlineColor = "rgba(200, 200, 200, 0.5)";
+        const snowIntelColor = "rgba(145, 255, 255, 1)";
+        const snowTelColor = "rgba(200, 200, 200, 1)";
+
+        var percent_light;
+        var color;
+        var hsl_string;
+        var cum_offset = 0;
+
+        for (dd = 0; dd < rawSNWD.length; dd++) {
+          var offset = -999;
+          var ddplus = dd + cum_offset;
+          var jj = 1;
+
+          if (
+            rawTOBS[ddplus] &&
+            rawSNWD[dd].dateTime == rawTOBS[ddplus].dateTime
+          ) {
+            offset = 0;
+          }
+
+          do {
+            if (
+              rawTOBS[ddplus + jj] &&
+              rawSNWD[dd].dateTime == rawTOBS[ddplus + jj].dateTime
+            ) {
+              offset = 1;
+            }
+            if (ddplus + jj < rawTOBS.length) {
+              jj = jj + 1;
+            } else {
+              break;
+            }
+          } while (offset == -999);
+
+          if (offset > -999) {
+            cum_offset = cum_offset + offset;
+            //console.log(cum_offset);
+            AirTempData.push(parseInt(rawTOBS[dd + cum_offset].value));
+
+            if (AirTempData[dd] > 30) {
+              color = 0;
+              percent_light = 162 - AirTempData[dd] * 2;
+              if (percent_light > 100) percent_light = 100;
+              if (percent_light < 10) percent_light = 10;
+              hsl_string = "hsl(" + color + ", 100%," + percent_light + "%)";
+              AirTempColor.push(hsl_string);
+            } else {
+              color = 237;
+              percent_light = 3 * AirTempData[dd] + 10;
+              if (percent_light > 100) percent_light = 100;
+              if (percent_light < 10) percent_light = 10;
+              hsl_string = "hsl(" + color + ", 100%," + percent_light + "%)";
+              AirTempColor.push(hsl_string);
+            }
+          } else {
+            AirTempData.push(undefined);
+            AirTempColor.push(undefined);
+          }
+        }
+        console.log(timestamps);
+        var timestamps2 = [];
+        var Xmas = new Date();
+        Xmas = Xmas.getFullYear();
+        for (dd = 0; dd < timestamps.length; dd++) {
+          timestamps2[dd] = Xmas + "-" + timestamps[dd];
+          timestamps2[dd] = moment(
+            timestamps2[dd],
+            "YYYY-MM-DD HH:mm"
+          ).toDate();
+        }
+
+        // Check if chart exists already
+        // If false, create new chart
+        // If true, update chart instead
+        if (myChart) {
+          //console.log(SnowDepthData);
+          myChart.data.labels = timestamps2;
+          myChart.data.datasets[0].data = SnowDepthData;
+          //myChart.data.datasets[1].data = AirTempData;
+          myChart.data.datasets[0].pointBackgroundColor = function(context) {
+            var index = context.dataIndex;
+            //var value = context.dataset.data[index];
+            return AirTempColor[index];
+          };
+          myChart.options.tooltips.callbacks.label = function(
+            tooltipItem,
+            data
+          ) {
+            var index = tooltipItem.index;
+            var airtemp_label = "Air Temp: " + AirTempData[index];
+            return airtemp_label;
+          };
+          myChart.options.tooltips.callbacks.footer = function(
+            tooltipItem,
+            data
+          ) {
+            var index = tooltipItem[0].index;
+            var snow_label = "Snow Depth: " + SnowDepthData[index];
+            return snow_label;
+          };
+
+          myChart.options.title.text = [DisplayString, "Snow Depth"];
+          myChart.update();
+        } else {
+          myChart = new Chart(ctx, {
+            //subtitle: "Compare SnoTel Snow Depth To Snow Intel Forecast",
+            type: "line",
+            data: {
+              labels: timestamps2,
+              datasets: [
+                {
+                  label: "Snow Depth",
+                  data: SnowDepthData,
+                  backgroundColor: snowTelColor,
+                  borderColor: snowTelColor,
+                  fill: false,
+                  pointBackgroundColor: function(context) {
+                    var index = context.dataIndex;
+                    //var value = context.dataset.data[index];
+                    return AirTempColor[index];
+                  }
+                } /*,
+                      {
+                        label: "Air Temp",
+                        data: AirTempData,
+                        backgroundColor: snowIntelColor,
+                        borderColor: snowIntelColor,
+                        fill: false
+                      }*/
+              ]
+            },
+            options: {
+              legend: {
+                display: false
+              },
+              title: {
+                display: true,
+                text: [DisplayString, "Snow Depth"],
+                fontSize: 20,
+                verticalAlign: "top", // "top", "center", "bottom"
+                horizontalAlign: "right" // "left", "right", "center"
+              },
+
+              responsive: true,
+              maintainAspectRatio: false,
+              scales: {
+                xAxes: [
+                  {
+                    type: "time",
+                    time: {
+                      tooltipFormat: "MM-DD HH:mm",
+                      unit: "day"
+                    },
+                    gridLines: {
+                      color: gridlineColor
+                    }
+                  }
+                ],
+                yAxes: [
+                  {
+                    scaleLabel: {
+                      display: true,
+                      labelString: "inches"
+                    },
+                    ticks: {
+                      suggestedMax: 100, // minimum will be 0, unless there is a lower value.
+                      min: 0,
+                      // OR //
+                      beginAtZero: true // minimum value will be 0.
+                    },
+                    gridLines: {
+                      color: gridlineColor
+                    }
+                  }
+                ]
+              },
+              tooltips: {
+                callbacks: {
+                  label: function(tooltipItem, data) {
+                    var index = tooltipItem.index;
+                    //var value = data.datasets[tooltipItem.datasetIndex].data[index];
+                    //var snow_label = "Snow Depth: " + SnowDepthData[index];
+                    var airtemp_label = "Air Temp: " + AirTempData[index];
+                    //return [snow_label, airtemp_label];
+                    return airtemp_label;
+                  },
+                  footer: function(tooltipItem, data) {
+                    var index = tooltipItem[0].index;
+                    var snow_label = "Snow Depth: " + SnowDepthData[index];
+                    return snow_label;
+                  }
+                }
+              }
+            }
+          });
+        }
+      };
+      };
+
+      change_map_data = function(Option) {
+        if (Option == 0) {
+          Color = "TodayColor";
+          Time = "Today";
+        }
+        if (Option == 1) {
+          Color = "OneDayColor";
+          Time = "OneDayChange";
+        }
+        if (Option == 5) {
+          Color = "FiveDayColor";
+          Time = "FiveDayChange";
+        }
+        if (Option == 4) {
+          Color = "elevationColor";
+          Time = "elevation";
+        }
+         if (Option == 6) {
+          Color = "avgColor";
+          Time = "Avg";
+        }
+
+        map.data.setStyle(function(feature) {
+          var color = "#" + feature.getProperty(Color);
+          if (Time == "elevation") {
+            var labeler = parseInt(feature.getProperty(Time) / 100) / 10;
+          } else if (Time == "Avg"){
+            var labeler = parseInt(feature.getProperty(Time)) + '%';
+          } else{
+            var labeler = feature.getProperty(Time) + '"';
+          }
+          return {
+            label: labeler,
+            icon: {
+              path: google.maps.SymbolPath.CIRCLE,
+              scale: 15,
+              fillColor: color,
+              fillOpacity: 1,
+              strokeWeight: 1,
+              strokeColor: color
+            }
+          };
+        });
+      };
+      
+      get_map_legend = function(Option) {
+        var leg_tit = document.getElementById("legend_title");
+            var L5 = document.getElementById("L5");
+                var L4 = document.getElementById("L4");
+              var L3 = document.getElementById("L3");
+                var L2 = document.getElementById("L2");
+              var L1 = document.getElementById("L1");
+                var L0 = document.getElementById("L0");
+         
+            var T5 = document.getElementById("T5");
+            var T4 = document.getElementById("T4");
+            var T3 = document.getElementById("T3");
+            var T2 = document.getElementById("T2");
+            var T1 = document.getElementById("T1");
+            var T0 = document.getElementById("T0");
+        
+          if (Option == 0) {
+         // Color = "TodayColor";
+         // Time = "Today";
+            
+               T5.innerHTML = '100"';
+               T4.innerHTML = '80"';
+               T3.innerHTML = '60"';
+               T2.innerHTML = '40"';
+               T1.innerHTML = '20"';
+               T0.innerHTML = '0"';
+            leg_tit.innerHTML = 'Current Depth';
+            
+        }
+        if (Option == 1) {
+             T5.innerHTML = '+9"';
+               T4.innerHTML = '+6"';
+               T3.innerHTML = '+3"';
+               T2.innerHTML = '-3"';
+               T1.innerHTML = '-6"';
+               T0.innerHTML = '-9"';
+              leg_tit.innerHTML = '1 Day Depth';
+
+        }
+        if (Option == 5) {
+             T5.innerHTML = '+18"';
+               T4.innerHTML = '+12"';
+               T3.innerHTML = '+6"';
+               T2.innerHTML = '-6"';
+               T1.innerHTML = '-12"';
+               T0.innerHTML = '-18"';
+              leg_tit.innerHTML = '5 Day Depth';
+
+        }
+         if (Option == 4) {
+         // Color = "TodayColor";
+         // Time = "Today";
+            
+               T5.innerHTML = '11k"';
+               T4.innerHTML = '10k"';
+               T3.innerHTML = '9k"';
+               T2.innerHTML = '8k"';
+               T1.innerHTML = '7k"';
+               T0.innerHTML = '6k"';
+            leg_tit.innerHTML = 'SnoTel Elevation'; //"#228B22" "#4EA24E" "#7AB97A" "#A6D0A6" "#D2E7D2" "#FFFFFF"
+            
+           L0.style.backgroundColor = "#228B22"; 
+               L1.style.backgroundColor = "#4EA24E";
+         L2.style.backgroundColor = "#7AB97A";
+         L3.style.backgroundColor = "#A6D0A6";
+         L4.style.backgroundColor = "#D2E7D2";
+         L5.style.backgroundColor = "#FFFFFF" ;//"#FF0000" "#E54C4C" "#CB9898" "#CBCBCB" "#E5E5E5" "#FFFFFF"
+        }
+            if (Option == 6) {
+         // Color = "TodayColor";
+         // Time = "Today";
+            
+               T5.innerHTML = '150%';
+               T4.innerHTML = '120%';
+               T3.innerHTML = '90%';
+               T2.innerHTML = '60%';
+               T1.innerHTML = '30%';
+               T0.innerHTML = '0%';
+            leg_tit.innerHTML = '% Avg SWE';
+            
+        }
+         
+                 if (Option != 4) {
+               L0.style.backgroundColor = "#FF0000"; 
+               L1.style.backgroundColor = "#E54C4C";
+         L2.style.backgroundColor = "#CB9898";
+         L3.style.backgroundColor = "#CBCBCB";
+         L4.style.backgroundColor = "#E5E5E5";
+         L5.style.backgroundColor = "#FFFFFF" ;//"#FF0000" "#E54C4C" "#CB9898" "#CBCBCB" "#E5E5E5" "#FFFFFF"
+                 }
+        
+      }
+      
+       get_chart_legend = function() {
+                 var leg_tit = document.getElementById("legend_title");
+                  var L5 = document.getElementById("L5");
+                var L4 = document.getElementById("L4");
+              var L3 = document.getElementById("L3");
+                var L2 = document.getElementById("L2");
+              var L1 = document.getElementById("L1");
+                var L0 = document.getElementById("L0");
+         
+            var T5 = document.getElementById("T5");
+            var T4 = document.getElementById("T4");
+            var T3 = document.getElementById("T3");
+            var T2 = document.getElementById("T2");
+            var T1 = document.getElementById("T1");
+            var T0 = document.getElementById("T0");
+         
+                     leg_tit.innerHTML = 'Air Temp';
+
+         
+               T5.innerHTML = "40F";
+               T4.innerHTML = "32F";
+               T3.innerHTML = "24F";
+               T2.innerHTML = "16F";
+               T1.innerHTML = "8F";
+               T0.innerHTML = "0F";
+         
+               L5.style.backgroundColor = "red";
+               L4.style.backgroundColor = "#FFFFFF";
+         L3.style.backgroundColor = "#6666CC";
+         L2.style.backgroundColor = "#0000BB";
+         L1.style.backgroundColor = "#000066";
+         L0.style.backgroundColor = "#000000";
+      }
+      
+
+      get_new_map = function(State_Selected, Option) {
+        console.log(State_Selected);
+        console.log(Option);
+        var map_focus;
+        var zoom;
+
+        if (Option == 0) {
+          Color = "TodayColor";
+          Time = "Today";
+        }
+        if (Option == 1) {
+          Color = "OneDayColor";
+          Time = "OneDayChange";
+        }
+        if (Option == 5) {
+          Color = "FiveDayColor";
+          Time = "FiveDayChange";
+        }
+         if (Option == 6) {
+          Color = "avgColor";
+          Time = "Avg";
+        }
+
+        if (State_Selected == "UT") {
+          map_focus = { lat: 40.344, lng: -112.036 };
+          zoom = 7;
+        }
+        if (State_Selected == "AK") {
+          map_focus = { lat: 62.344, lng: -145.036 };
+          zoom = 5;
+        }
+        if (State_Selected == "AZ") {
+          map_focus = { lat: 35.044, lng: -111.536 };
+          zoom = 7;
+        }
+        if (State_Selected == "CA") {
+          map_focus = { lat: 40.144, lng: -120.036 };
+          zoom = 7;
+        }
+        if (State_Selected == "CO") {
+          map_focus = { lat: 39.344, lng: -106.236 };
+          zoom = 7;
+        }
+        if (State_Selected == "WA") {
+          map_focus = { lat: 47.544, lng: -121.886 };
+          zoom = 7;
+        }
+        if (State_Selected == "OR") {
+          map_focus = { lat: 44.144, lng: -119.036 };
+          zoom = 7;
+        }
+        if (State_Selected == "MT") {
+          map_focus = { lat: 47.144, lng: -110.036 };
+          zoom = 6;
+        }
+
+        if (State_Selected == "NV") {
+          map_focus = { lat: 39.144, lng: -115.036 };
+          zoom = 6;
+        }
+        if (State_Selected == "NM") {
+          map_focus = { lat: 35.244, lng: -104.886 };
+          zoom = 7;
+        }
+        if (State_Selected == "ID") {
+          map_focus = { lat: 46.144, lng: -112.036 };
+          zoom = 6;
+        }
+        if (State_Selected == "WY") {
+          map_focus = { lat: 43.544, lng: -107.886 };
+          zoom = 6;
+        }
+
+        map = new google.maps.Map(document.getElementById("map"), {
+          zoom: zoom,
+          center: map_focus,
+          mapTypeId: "hybrid"
+        });
+
+        const initURL =
+          "https://snow-quickie.glitch.me/dreams/" + State_Selected;
+
+        fetch(initURL) // Call the fetch function passing the url of the API as a parameter
+          .then(response => response.text())
+          .then(
+            data => {
+              //console.log(data);
+              map.data.addGeoJson(JSON.parse(data));
+
+              map.data.setStyle(function(feature) {
+                var color = "#" + feature.getProperty(Color);
+                   if (Time == "elevation") {
+            var labeler = parseInt(feature.getProperty(Time) / 100) / 10;
+          } else if (Time == "Avg"){
+            var labeler = parseInt(feature.getProperty(Time)) + '%';
+          } else{
+            var labeler = feature.getProperty(Time) + '"';
+          }
+
+                return {
+                  label: labeler,
+                  icon: {
+                    path: google.maps.SymbolPath.CIRCLE,
+                    scale: 15,
+                    fillColor: color,
+                    fillOpacity: 1,
+                    strokeWeight: 1,
+                    strokeColor: color
+                  }
+                };
+              });
+
+              map.data.addListener("click", function(event) {
+                // marker.data.overrideStyle(event.feature, {visible: true});
+                Selected_Site_Triplet = event.feature.getProperty(
+                  "stationTriplet"
+                );
+                Selected_SiteID = event.feature.getProperty("name");
+                Selected_SiteName = event.feature.getProperty("name");
+                Selected_Elevation = event.feature.getProperty("elevation");
+                Selected_Site_HasWind = event.feature.getProperty("Wind")
+
+                // console.log(Selected_SiteID);
+                //console.log(event);
+                setData(Selected_Site_Triplet);
+                get_chart_legend();
+                ga(
+                  "send",
+                  "event",
+                  "Map Click",
+                  Selected_Site_Triplet,
+                  "Marker Click"
+                );
+
+                var x = document.getElementById("map");
+                var y = document.getElementById("snowchart");
+                if (x.style.display === "none") {
+                  x.style.display = "block";
+                  y.style.display = "none";
+                } else {
+                  x.style.display = "none";
+                  y.style.display = "block";
+                }
+                var z = document.getElementById("back_to_map");
+                z.style.display = "block";
+                overlay_off();
+                //resizeCanvas();
+                
+              if (Selected_Site_HasWind=="Yes"){
+                var wind_option = document.getElementById("Show_Wind");
+                wind_option.style.display = "block";}
+              });
+            }
+            // Your code for handling the data you get from the API
+          )
+          .catch(function() {
+            // This is where you run code if the server returns any errors
+            window.alert("Failed To Retreive Data");
+          });
+
+        return map;
+      };
+    </script>
+  </head>
+  <body>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.8.0/Chart.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/iframe-resizer/4.2.1/iframeResizer.contentWindow.min.js"></script>
+    <script
+      type="text/javascript"
+      src="//code.jquery.com/jquery-1.11.0.min.js"
+    ></script>
+    <script
+      type="text/javascript"
+      src="//code.jquery.com/jquery-migrate-1.2.1.min.js"
+    ></script>
+    <script
+      type="text/javascript"
+      src="//cdn.jsdelivr.net/npm/slick-carousel@1.8.1/slick/slick.min.js"
+    ></script>
+
+    <div id="overlay2">
+      <div
+        id="overlay_text"
+        onclick="{window.open('https://www.snow-intel.com/snotelapp-colorado');
+                                      captureOutboundLink('https://www.snow-intel.com/snotelapp-colorado'); 
+                                      return false;}"
+      >
+        <h1>
+          Snow Quickie
+        </h1>
+        <h2>
+          NRCS SnoTel Data
+        </h2>
+      </div>
+      <div id="install_button">
+        <button id="butInstall" type="button" onclick="overlay_3_toggle()">
+          App
+        </button>
+      </div>
+    </div>
+
+    <div id="overlay3" onclick="overlay_3_toggle()">
+      <div id="overlay3_v">
+        <!--<div id="overlay_text3">Add App</div>-->
+        <img
+          src="https://cdn.glitch.com/79a8371f-8b19-442a-8cef-9def4343f601%2FHow%20To%20iOS%20300.png?v=1585883636633"
+          alt="How To Install App on iOS"
+        />
+        <div id="overlay3_vv">
+          <img
+            src="https://cdn.glitch.com/79a8371f-8b19-442a-8cef-9def4343f601%2Farrows.png?v=1585886377839"
+            alt="Click To Get App"
+          />
+        </div>
+      </div>
+    </div>
+
+    <div id="alerty" class="alert alert-info alert-dismissible" role="alert">
+      <button
+        aria-label="Close"
+        class="close"
+        data-dismiss="alert"
+        type="button"
+        onclick="(function(){
+    ga('send', 'event', 'Banner', 'Close', 'Closed By User');
+    BannerShown = 2;
+    return false;
+})();return false;"
+      >
+        <span aria-hidden="true">×</span>
+      </button>
+      <p>
+        <a
+          id="link_to_si"
+          href="https://snow-intel.com"
+          target="_blank"
+          onclick="captureOutboundLink('https://snow-intel.com'); return false;"
+        >
+        </a>
+      </p>
+      <div
+        id="bg_banner_click"
+        onclick="{captureOutboundLink('https://snow-intel.com'); 
+                                                                                      return false;}"
+      ></div>
+    </div>
+
+    <div id="map"></div>
+    <div id="legenddiv" class="legend" draggable="true">
+      <div class="legend_title" id="legend_title">Current Depth</div>
+      <div class="grow"> <div class="trow" id="L5"> </div> <div class="trow" id="T5"> 100" </div> </div>
+      <div class="grow"> <div class="trow" id="L4"> </div> <div class="trow" id="T4"> 80" </div> </div>
+      <div class="grow"> <div class="trow" id="L3"> </div> <div class="trow" id="T3"> 60" </div> </div>
+      <div class="grow"> <div class="trow" id="L2"> </div> <div class="trow" id="T2"> 40" </div> </div>
+      <div class="grow"> <div class="trow" id="L1"> </div> <div class="trow" id="T1"> 20" </div> </div>
+      <div class="grow"> <div class="trow" id="L0"> </div> <div class="trow" id="T0"> 0" </div> </div>
+    </div>
+
+    <!--Load the API from the specified URL
+    * The async attribute allows the browser to render the page while the API loads
+    * The key parameter will contain your own API key (which is not needed for this tutorial)
+    * The callback parameter executes the initMap() function
+    -->
+    <script>
+      // Initialize and add the map
+      async function setCookie(c_name,value,exdays) {
+    var exdate=new Date();
+    exdate.setDate(exdate.getDate() + exdays);
+    var c_value=escape(value) + ((exdays==null) ? "" : "; expires="+exdate.toUTCString());
+    document.cookie=c_name + "=" + c_value;
+}
+
+function getCookie(c_name) {
+    var i,x,y,ARRcookies=document.cookie.split(";");
+    for (i=0;i<ARRcookies.length;i++)
+    {
+      x=ARRcookies[i].substr(0,ARRcookies[i].indexOf("="));
+      y=ARRcookies[i].substr(ARRcookies[i].indexOf("=")+1);
+      x=x.replace(/^\s+|\s+$/g,"");
+      if (x==c_name)
+        {
+        return unescape(y);
+        }
+      }
+    return "";
+}
+      
+      async function saveMapState() { 
+    var mapZoom=map.getZoom(); 
+    var mapCentre=map.getCenter(); 
+    var mapLat=mapCentre.lat(); 
+    var mapLng=mapCentre.lng(); 
+    var cookiestring=mapLat+"_"+mapLng+"_"+mapZoom; 
+    setCookie("myMapCookie",cookiestring, 30); 
+} 
+      
+      function tilesLoaded() {
+    google.maps.event.clearListeners(map, 'tilesloaded');
+    google.maps.event.addListener(map, 'zoom_changed', saveMapState);
+    google.maps.event.addListener(map, 'dragend', saveMapState);
+}   
+      
+      function initMap() {
+        var gotCookieString=getCookie("myMapCookie"); 
+    var splitStr = gotCookieString.split("_");
+    var savedMapLat = parseFloat(splitStr[0]);
+    var savedMapLng = parseFloat(splitStr[1]);
+    var savedMapZoom = parseFloat(splitStr[2]);
+
+        var cookie = getCookie("state");
+        console.log(cookie);
+        if (states.includes(cookie) == false) {
+          map = get_new_map("CO", Option);
+          document.getElementById("State_Selecter").selectedIndex = 3;
+        } else {
+          map = get_new_map(cookie, Option);
+          document.getElementById("State_Selecter").value = cookie;
+        }
+            if ((!isNaN(savedMapLat)) && (!isNaN(savedMapLng)) && (!isNaN(savedMapZoom))) {
+        map.setCenter(new google.maps.LatLng(savedMapLat,savedMapLng));
+        map.setZoom(savedMapZoom);
+    }
+        google.maps.event.addListener(map, 'tilesloaded', tilesLoaded);
+      }
+      google.maps.event.addDomListener(window, "load", initMap);
+      
+    </script>
+
+    <script>
+      var msg_c = Math.floor(Math.random() * 10) + 1;
+      if (msg_c <= 4)
+        document.getElementById("link_to_si").text = "See If Your Route Is In";
+      if (msg_c > 4 && msg_c <= 7)
+        document.getElementById("link_to_si").text =
+          "Need More Precise Conditions?";
+      if (msg_c > 7)
+        document.getElementById("link_to_si").text =
+          "Check If The Snow Is Crusty";
+    </script>
+    <script
+      async
+      defer
+      src="https://maps.googleapis.com/maps/api/js?key=AIzaSyByE7dj9Hl1qE3NvXk-wMCr9W21ayvoU9A&callback=initMap"
+    ></script>
+
+    <div style="position: relative; z-index: 2; width: 50%">
+      <button
+        id="back_to_map"
+        class="btn"
+        onclick="returnToMap()"
+        style="position: fixed; top: 5vh; left: 2.5vw; display: none;
+          width: 15vw;
+          max-width: 75px;
+          max-height: 50px;
+          height: 10vh;
+          color: #666666;
+          text-align: center;
+          font-family: sans-serif;
+          font-weight: 400;
+          background-color: rgba(0, 0, 0, 0);
+               border-color: #cccccc;"
+      >
+        <i class="fa fa-arrow-left"></i>
+      </button>
+    </div>
+    
+    <div id="Wind_Chart" style="position: absolute; display: none;" >
+      <div id="chartHolder" style="position: absolute; width:100vw; height:80vh; top:18vh;"></div>
+    </div>
+    
+        <div style="position: relative"}>
+      <button
+        id="Show_Wind"
+        onclick="showWindChart()"
+        style="position: fixed; top: 5vh; right: 2.5vw; display: none; z-index: 3;
+          width: 15vw;
+          max-width: 75px;
+          max-height: 50px;
+          height: 10vh;
+          color: #666666;
+          text-align: center;
+          font-family: sans-serif;
+          font-weight: 400;
+          background-color: rgba(0, 0, 0, 0);
+               border-color: #cccccc;"
+      >    
+        <img type = "image"
+         src = "https://cdn.glitch.me/79a8371f-8b19-442a-8cef-9def4343f601/wind.png?v=1640741188213"
+          style="  width: 10vw;
+          max-width: 75px;
+          max-height: 50px;
+          height: 10vh;"
+         >
+
+        </img>
+      </button>
+    </div>
+
+    <script>
+      if (iOS() == false || isInStandaloneMode()) {
+        document.getElementById("butInstall").style.display = "none";
+        //document.getElementById("butInstall").style.top = "50%";
+        // document.getElementById("butInstall").style.left = "85%";
+      }
+      
+            function showWindChart() {
+          var y = document.getElementById("snowchart");
+        var wind_option = document.getElementById("Show_Wind");
+        var legend = document.getElementById('legenddiv');
+
+
+              var wind_chart = document.getElementById("Wind_Chart");
+                        wind_option.style.display = "none";
+              
+        wind_chart.style.display = "block";
+        y.style.display = "none";
+        legend.style.display = "none";
+              
+setWindCharts(Selected_Site_Triplet);
+              
+            }
+      
+      
+
+      function returnToMap() {
+        
+        var legend = document.getElementById('legenddiv');
+        var x = document.getElementById("map");
+        var y = document.getElementById("snowchart");
+        var wind_option = document.getElementById("Show_Wind");
+        var wind_chart = document.getElementById("Wind_Chart");
+        var z = document.getElementById("back_to_map");
+
+        wind_chart.style.display = "none";
+        legend.style.display = "block";
+
+       if (x.style.display === "none"&& y.style.display === "none") {
+         //back from wind chart
+          x.style.display = "none";
+          y.style.display = "block";
+          wind_option.style.display = "block";
+        } else if (x.style.display === "none") {
+          //snow chart is showing
+          x.style.display = "block";
+          y.style.display = "none";
+          wind_option.style.display = "none";
+               z.style.display = "none";
+        overlay_on();
+        $(".slick-slider").slick("setPosition");
+        get_map_legend(Option);
+        } /*else {
+          //map is showing
+          x.style.display = "none";
+          y.style.display = "block";
+          wind_option.style.display = "block";
+        }*/
+   
+      }
+      
+    </script>
+
+    <div
+      id="snowchart"
+      class="chart-container"
+      style="position: relative; width: 95vw; height: 90vh; margin: 15px; display: none; z-index:1;"
+    >
+      <canvas id="snowChart" />
+    </div>
+
+    <div id="overlay">
+      <div id="State_Title">State</div>
+      <div id="Data_Title">Data</div>
+      <div id="State_Div" class="custom-select">
+        <select onchange="changeState()" id="State_Selecter">
+          <option value="AK">AK</option>
+          <option value="AZ">AZ</option>
+          <option value="CA">CA</option>
+          <option value="CO">CO</option>
+          <option value="ID">ID</option>
+          <option value="MT">MT</option>
+          <option value="NM">NM</option>
+          <option value="NV">NV</option>
+          <option value="OR">OR</option>
+          <option value="UT">UT</option>
+          <option value="WA">WA</option>
+          <option value="WY">WY</option>
+        </select>
+      </div>
+      <div class="slider-class" id="car">
+        <div id="Today">Current Depth</div>
+        <div id="OneDay">One Day Change</div>
+        <div id="FiveDay">Five Day Change</div>
+        <div id="Elevation">Elevation (1k ft)</div>
+        <div id="Avg">% Avg SWE</div>
+      </div>
+    </div>
+
+    <script type="text/javascript">
+      $(".slider-class").slick({
+        centerMode: true,
+        centerPadding: "0px",
+        slidesToShow: 1,
+        arrows: true,
+        responsive: [
+          {
+            breakpoint: 768,
+            settings: {
+              centerMode: true,
+              centerPadding: "0px",
+              slidesToShow: 1,
+              arrow: true
+            }
+          },
+          {
+            breakpoint: 600,
+            settings: {
+              centerMode: true,
+              centerPadding: "0px",
+              slidesToShow: 1,
+              arrows: true
+            }
+          }
+        ]
+      });
+
+      $(".slider-class").on("afterChange", function(
+        event,
+        slick,
+        currentSlide
+      ) {
+        //$('.content').hide();
+        console.log(currentSlide);
+        if (currentSlide == 0) {
+          Option = 0;
+        }
+        if (currentSlide == 1) {
+          Option = 1;
+        }
+        if (currentSlide == 2) {
+          Option = 5;
+        }
+        if (currentSlide == 3) {
+          Option = 4;
+        }
+        if (currentSlide == 4) {
+          Option = 6;
+        }
+        changeData(Option);
+      });
+    </script>
+  </body>
+  <script src="install.js"></script>
+
+  <script>
+    if ("serviceWorker" in navigator) {
+      window.addEventListener("load", () => {
+        navigator.serviceWorker.register("/service-worker.js").then(reg => {
+          console.log("Service worker registered.", reg);
+        });
+      });
+    }
+    window.addEventListener("load", function() {
+      window.history.pushState({}, "");
+    });
+
+    window.addEventListener("popstate", function() {
+      if (document.getElementById("map").style.display == "none") {
+        console.log("aye");
+        window.history.pushState({}, "");
+        returnToMap();
+      }
+    });
+
+    setTimeout(showBanner, 20000);
+    
+          window.onload = addListeners;
+
+    const width =
+      window.innerWidth ||
+      document.documentElement.clientWidth ||
+      document.body.clientWidth;
+    const height =
+      window.innerHeight ||
+      document.documentElement.clientHeight ||
+      document.body.clientHeight;
+
+    if (!isInStandaloneMode()) {
+      document.getElementById("snowchart").style.height = "85vh";
+    }
+  </script>
+</html>
