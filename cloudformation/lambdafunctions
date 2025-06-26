@@ -23,7 +23,6 @@ Globals:
     Timeout: 10
     Runtime: !Ref NodeRuntime
     MemorySize: 128
-    Role: !Ref LambdaExecutionRoleArn
 
 Resources:
   # Per-function Lambda Layers
@@ -69,6 +68,7 @@ Resources:
       Handler: index.handler # Assumes index.js exports a 'handler' function
       Layers:
         - !Ref GenerateStateLayer
+      Role: !Ref LambdaExecutionRoleArn
       # This function does not have an API Gateway trigger
 
   # Lambda function for getState
@@ -80,6 +80,7 @@ Resources:
       Handler: index.handler
       Layers:
         - !Ref GetStateLayer
+      Role: !Ref LambdaExecutionRoleArn
       Events:
         ApiEvent:
           Type: Api
@@ -97,6 +98,7 @@ Resources:
       Handler: index.handler
       Layers:
         - !Ref GetHourlyLayer
+      Role: !Ref LambdaExecutionRoleArn
       Events:
         ApiEvent:
           Type: Api
