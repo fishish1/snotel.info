@@ -305,13 +305,17 @@ async function main() {
 
       console.log(JSON.stringify(state_data));
       
-      await s3.putObject({
-        Bucket: bucketName,
-        Key: filename,
-        Body: state_data,
-        ContentType: "application/json"
-      }).promise();
-      console.log(state, "JSON saved to S3");
+      if (process.env.DRY_RUN !== 'true') {
+        await s3.putObject({
+          Bucket: bucketName,
+          Key: filename,
+          Body: state_data,
+          ContentType: "application/json"
+        }).promise();
+        console.log(state, "JSON saved to S3");
+      } else {
+        console.log("DRY_RUN is set. Skipping S3 upload.");
+      }
     } catch (err) {
       console.error(`Error processing state ${state}:`, err);
     }
