@@ -16,7 +16,7 @@ jobs:
         run: |
           find lambda -mindepth 2 -maxdepth 2 -type d -name node_modules | while read dir; do
             parent=$(dirname "$dir")
-            (cd "$dir" && zip -r "$parent/node_modules.zip" .)
+            (cd "$parent" && zip -r "node_modules.zip" "node_modules")
           done
 
       - name: Configure AWS credentials
