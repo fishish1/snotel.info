@@ -12,13 +12,6 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Zip node_modules in lambda subfolders
-        run: |
-          find lambda -mindepth 2 -maxdepth 2 -type d -name node_modules | while read dir; do
-            parent=$(dirname "$dir")
-            (cd "$parent" && zip -r "node_modules.zip" "node_modules")
-          done
-
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v2
         with:
