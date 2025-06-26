@@ -25,7 +25,7 @@ Globals:
     MemorySize: 128
 
 Resources:
-  # Per-function Lambda Layers
+  # Per Function Lambda Layers
   GenerateStateLayer:
     Type: AWS::Serverless::LayerVersion
     Properties:
