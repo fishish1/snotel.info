@@ -64,7 +64,7 @@ Resources:
     Type: AWS::Serverless::Function
     Properties:
       FunctionName: generateState
-      CodeUri: ../lambda/generateState/
+      CodeUri: ../../lambda/generateState/index.mjs
       Handler: index.handler # Assumes index.js exports a 'handler' function
       Layers:
         - !Ref GenerateStateLayer
@@ -76,7 +76,7 @@ Resources:
     Type: AWS::Serverless::Function
     Properties:
       FunctionName: getState
-      CodeUri: ../lambda/getState/
+      CodeUri: ../../lambda/getState/index.mjs
       Handler: index.handler
       Layers:
         - !Ref GetStateLayer
@@ -94,7 +94,7 @@ Resources:
     Type: AWS::Serverless::Function
     Properties:
       FunctionName: getHourly
-      CodeUri: ../lambda/getHourly/
+      CodeUri: ../../lambda/getHourly/index.mjs
       Handler: index.handler
       Layers:
         - !Ref GetHourlyLayer
