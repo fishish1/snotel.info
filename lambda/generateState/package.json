@@ -1,0 +1,17 @@
+{
+  "name": "generatestate-lambda",
+  "version": "1.0.0",
+  "description": "Lambda function to generate state data for snotel.info",
+  "main": "index.js",
+  "scripts": {
+    "test": "node test.js"
+  },
+  "dependencies": {
+    "aws-sdk": "^2.1692.0",
+    "axios": "^0.27.2",
+    "chroma-js": "^2.4.2",
+    "easy-soap-request": "^5.0.0",
+    "geojson": "^0.5.0",
+    "xml2json": "^0.12.0"
+  }
+}

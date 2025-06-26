@@ -66,10 +66,10 @@
       href="https://cdn.glitch.com/79a8371f-8b19-442a-8cef-9def4343f601%2FSnow%20Intel%20Icon%20appl.png?v=1585871966505"
     />
 
-    <title>SnoTel Backcountry Snow Conditions By Snow Intel</title>
+    <title>SnoTel Dashboard</title>
     <meta
       name="description"
-      content="App for NRCS SnoTel data. Check backcountry snow conditions and weather as measured by NRCS SnoTel stations. Colorado is featured."
+      content="Easily view SnoTel data, including snow depth, snowfall, and more. This app is designed for backcountry enthusiasts in Colorado and beyond."
     />
     <meta
       name="keywords"
@@ -777,10 +777,6 @@
       function overlay_on() {
         document.getElementById("overlay").style.display = "block";
         document.getElementById("overlay2").style.display = "block";
-        if (BannerShown == 1) {
-          document.getElementById("alerty").style.display = "block";
-          ga("send", "event", "Banner", "Shown", "User Saw It");
-        }
       }
       function overlay_off() {
         document.getElementById("overlay").style.display = "none";
@@ -803,11 +799,6 @@
           o3 = "on";
           return;
         }
-      }
-
-      function showBanner() {
-        //ga("send", "event", "Banner", "Eligible", "On Page N (20) Seconds");
-        //BannerShown = 1;
       }
       
 
@@ -1611,13 +1602,9 @@ var layoutStr =
 
     <div id="overlay2">
       <div
-        id="overlay_text"
-        onclick="{window.open('https://www.snow-intel.com/snotelapp-colorado');
-                                      captureOutboundLink('https://www.snow-intel.com/snotelapp-colorado'); 
-                                      return false;}"
-      >
+        id="overlay_text">
         <h1>
-          Snow Quickie
+          Snotel.Info
         </h1>
         <h2>
           NRCS SnoTel Data
@@ -1644,36 +1631,6 @@ var layoutStr =
           />
         </div>
       </div>
-    </div>
-
-    <div id="alerty" class="alert alert-info alert-dismissible" role="alert">
-      <button
-        aria-label="Close"
-        class="close"
-        data-dismiss="alert"
-        type="button"
-        onclick="(function(){
-    ga('send', 'event', 'Banner', 'Close', 'Closed By User');
-    BannerShown = 2;
-    return false;
-})();return false;"
-      >
-        <span aria-hidden="true">×</span>
-      </button>
-      <p>
-        <a
-          id="link_to_si"
-          href="https://snow-intel.com"
-          target="_blank"
-          onclick="captureOutboundLink('https://snow-intel.com'); return false;"
-        >
-        </a>
-      </p>
-      <div
-        id="bg_banner_click"
-        onclick="{captureOutboundLink('https://snow-intel.com'); 
-                                                                                      return false;}"
-      ></div>
     </div>
 
     <div id="map"></div>
@@ -1771,7 +1728,7 @@ function getCookie(c_name) {
     <script
       async
       defer
-      src="https://maps.googleapis.com/maps/api/js?key=AIzaSyByE7dj9Hl1qE3NvXk-wMCr9W21ayvoU9A&callback=initMap"
+      src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBlJy7RY3BhB795phIHVRYW4AjN0kDoTuc&callback=initMap"
     ></script>
 
     <div style="position: relative; z-index: 2; width: 50%">
@@ -2001,8 +1958,6 @@ setWindCharts(Selected_Site_Triplet);
         returnToMap();
       }
     });
-
-    setTimeout(showBanner, 20000);
     
           window.onload = addListeners;
 

@@ -1,0 +1,115 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: Snotel.info backend with Lambda functions and layers.
+
+Parameters:
+  NodeRuntime:
+    Type: String
+    Default: nodejs18.x
+    Description: The NodeJS runtime for the Lambda functions.
+  DomainName:
+    Type: String
+    Default: api.snotel.info
+    Description: The custom domain name for the API Gateway.
+  CertificateArn:
+    Type: String
+    Description: The ARN of the ACM certificate for the custom domain (must be in us-east-1).
+  LambdaExecutionRoleArn:
+    Type: String
+    Description: The ARN of the pre-existing IAM role for the Lambda functions.
+
+Globals:
+  Function:
+    Timeout: 10
+    Runtime: !Ref NodeRuntime
+    MemorySize: 128
+    Role: !Ref LambdaExecutionRoleArn
+
+Resources:
+  # Per-function Lambda Layers
+  GenerateStateLayer:
+    Type: AWS::Serverless::LayerVersion
+    Properties:
+      LayerName: GenerateStateDependencies
+      Description: Dependencies for generateState
+      ContentUri: lambda/generateState/
+      CompatibleRuntimes:
+        - !Ref NodeRuntime
+    Metadata:
+      BuildMethod: nodejs18.x
+
+  GetStateLayer:
+    Type: AWS::Serverless::LayerVersion
+    Properties:
+      LayerName: GetStateDependencies
+      Description: Dependencies for getState
+      ContentUri: lambda/getState/
+      CompatibleRuntimes:
+        - !Ref NodeRuntime
+    Metadata:
+      BuildMethod: nodejs18.x
+
+  GetHourlyLayer:
+    Type: AWS::Serverless::LayerVersion
+    Properties:
+      LayerName: GetHourlyDependencies
+      Description: Dependencies for getHourly
+      ContentUri: lambda/getHourly/
+      CompatibleRuntimes:
+        - !Ref NodeRuntime
+    Metadata:
+      BuildMethod: nodejs18.x
+
+  # Lambda function for generateState
+  GenerateStateFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: generateState
+      CodeUri: lambda/generateState/
+      Handler: index.handler # Assumes index.js exports a 'handler' function
+      Layers:
+        - !Ref GenerateStateLayer
+      # This function does not have an API Gateway trigger
+
+  # Lambda function for getState
+  GetStateFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: getState
+      CodeUri: lambda/getState/
+      Handler: index.handler
+      Layers:
+        - !Ref GetStateLayer
+      Events:
+        ApiEvent:
+          Type: Api
+          Properties:
+            Path: /state/{state}
+            Method: get
+            RestApiId: !Ref SnotelApi
+
+  # Lambda function for getHourly
+  GetHourlyFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: getHourly
+      CodeUri: lambda/getHourly/
+      Handler: index.handler
+      Layers:
+        - !Ref GetHourlyLayer
+      Events:
+        ApiEvent:
+          Type: Api
+          Properties:
+            Path: /hourly/{stationTriplet}
+            Method: get
+            RestApiId: !Ref SnotelApi
+
+  SnotelApi:
+    Type: AWS::Serverless::Api
+    Properties:
+      StageName: prod
+      Domain:
+        DomainName: !Ref DomainName
+        CertificateArn: !Ref CertificateArn
+        EndpointConfiguration: EDGE

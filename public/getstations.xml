@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<SOAP-ENV:Envelope xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/" xmlns:q0="http://www.wcc.nrcs.usda.gov/ns/awdbWebService" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <SOAP-ENV:Body>
+    <q0:getStations>
+      <stateCds>CO</stateCds>
+      <networkCds>SNTL</networkCds>
+      <logicalAnd>true</logicalAnd>
+    </q0:getStations>
+  </SOAP-ENV:Body>
+</SOAP-ENV:Envelope>
