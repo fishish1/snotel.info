@@ -69,7 +69,7 @@ Resources:
       Layers:
         - !Ref GenerateStateLayer
       Role: !Ref LambdaExecutionRoleArn
-      # This function does not have an API Gateway trigger
+      # This function does not have an API Gateway trigger so can only be invoked directly
 
   # Lambda function for getState
   GetStateFunction:
