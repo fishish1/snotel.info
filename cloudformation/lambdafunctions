@@ -31,7 +31,7 @@ Resources:
     Properties:
       LayerName: GenerateStateDependencies
       Description: Dependencies for generateState
-      ContentUri: ../lambda/generateState/
+      ContentUri: lambda/generateState/
       CompatibleRuntimes:
         - !Ref NodeRuntime
     Metadata:
@@ -42,7 +42,7 @@ Resources:
     Properties:
       LayerName: GetStateDependencies
       Description: Dependencies for getState
-      ContentUri: ../lambda/getState/
+      ContentUri: lambda/getState/
       CompatibleRuntimes:
         - !Ref NodeRuntime
     Metadata:
@@ -53,7 +53,7 @@ Resources:
     Properties:
       LayerName: GetHourlyDependencies
       Description: Dependencies for getHourly
-      ContentUri: ../lambda/getHourly/
+      ContentUri: lambda/getHourly/
       CompatibleRuntimes:
         - !Ref NodeRuntime
     Metadata:
@@ -65,4 +65,53 @@ Resources:
     Properties:
       FunctionName: generateState
       CodeUri: ../lambda/generateState/
-      Handler
+      Handler: index.handler # Assumes index.js exports a 'handler' function
+      Layers:
+        - !Ref GenerateStateLayer
+      Role: !Ref LambdaExecutionRoleArn
+      # This function does not have an API Gateway trigger
+
+  # Lambda function for getState
+  GetStateFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: getState
+      CodeUri: ../lambda/getState/
+      Handler: index.handler
+      Layers:
+        - !Ref GetStateLayer
+      Role: !Ref LambdaExecutionRoleArn
+      Events:
+        ApiEvent:
+          Type: Api
+          Properties:
+            Path: /state/{state}
+            Method: get
+            RestApiId: !Ref SnotelApi
+
+  # Lambda function for getHourly
+  GetHourlyFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: getHourly
+      CodeUri: ../lambda/getHourly/
+      Handler: index.handler
+      Layers:
+        - !Ref GetHourlyLayer
+      Role: !Ref LambdaExecutionRoleArn
+      Events:
+        ApiEvent:
+          Type: Api
+          Properties:
+            Path: /hourly/{stationTriplet}
+            Method: get
+            RestApiId: !Ref SnotelApi
+
+  SnotelApi:
+    Type: AWS::Serverless::Api
+    Properties:
+      StageName: prod
+      Domain:
+        DomainName: !Ref DomainName
+        CertificateArn: !Ref CertificateArn
+        EndpointConfiguration: EDGE
