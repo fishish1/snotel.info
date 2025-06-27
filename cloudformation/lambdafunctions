@@ -68,7 +68,9 @@ Resources:
       Handler: index.handler # Assumes index.js exports a 'handler' function
       Layers:
         - !Ref GenerateStateLayer
-      Role: !Ref LambdaExecutionRoleArn
+      Policies:
+        - S3WritePolicy:
+            BucketName: snotel.info
       # This function does not have an API Gateway trigger so can only be invoked directly
 
   # Lambda function for getState
