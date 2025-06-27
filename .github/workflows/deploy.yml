@@ -44,6 +44,14 @@ jobs:
             rm -rf "$parent/nodejs"
           done
 
+      - name: Upload layer zips to S3
+        run: |
+          find lambda -name "nodejs.zip" -type f | while read zipfile; do
+            # Extract function name from path (e.g., lambda/generateState/nodejs.zip -> generateState)
+            funcname=$(echo "$zipfile" | cut -d'/' -f2)
+            aws s3 cp "$zipfile" "s3://snotel.info.backend/layers/${funcname}-nodejs.zip"
+          done
+
       - name: Build and Deploy Lambdas with SAM
         run: |
           sam build --template-file cloudformation/lambdafunctions
