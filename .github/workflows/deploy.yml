@@ -44,13 +44,26 @@ jobs:
             rm -rf "$parent/nodejs"
           done
 
+      - name: Debug - List created zip files
+        run: |
+          echo "Looking for nodejs.zip files:"
+          find lambda -name "nodejs.zip" -type f -exec ls -la {} \;
+          echo "Lambda directory structure:"
+          find lambda -type f
+
       - name: Upload layer zips to S3
         run: |
           find lambda -name "nodejs.zip" -type f | while read zipfile; do
             # Extract function name from path (e.g., lambda/generateState/nodejs.zip -> generateState)
             funcname=$(echo "$zipfile" | cut -d'/' -f2)
+            echo "Uploading $zipfile to s3://snotel.info.backend/layers/${funcname}-nodejs.zip"
             aws s3 cp "$zipfile" "s3://snotel.info.backend/layers/${funcname}-nodejs.zip"
           done
+
+      - name: Debug - Verify S3 uploads
+        run: |
+          echo "Checking S3 bucket contents:"
+          aws s3 ls s3://snotel.info.backend/layers/
 
       - name: Build and Deploy Lambdas with SAM
         run: |
