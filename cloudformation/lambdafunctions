@@ -84,7 +84,11 @@ Resources:
               - 's3:PutObjectAcl'
             Resource: 'arn:aws:s3:::snotel.info/*'
       Roles:
-        - !Ref LambdaExecutionRoleArn
+        - !Select 
+          - 1
+          - !Split 
+            - /
+            - !Ref LambdaExecutionRoleArn
 
   # Lambda function for getState
   GetStateFunction:
