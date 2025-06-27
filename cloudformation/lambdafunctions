@@ -31,9 +31,7 @@ Resources:
     Properties:
       LayerName: GenerateStateDependencies
       Description: Dependencies for generateState
-      Content:
-        S3Bucket: snotel.info.backend
-        S3Key: layers/generateState
+      ContentUri: s3://snotel.info.backend/layers/generateState
       CompatibleRuntimes:
         - !Ref NodeRuntime
 
@@ -42,9 +40,7 @@ Resources:
     Properties:
       LayerName: GetStateDependencies
       Description: Dependencies for getState
-      Content:
-        S3Bucket: snotel.info.backend
-        S3Key: layers/getState
+      ContentUri: s3://snotel.info.backend/layers/getState
       CompatibleRuntimes:
         - !Ref NodeRuntime
 
@@ -53,9 +49,7 @@ Resources:
     Properties:
       LayerName: GetHourlyDependencies
       Description: Dependencies for getHourly
-      Content:
-        S3Bucket: snotel.info.backend
-        S3Key: layers/getHourly
+      ContentUri: s3://snotel.info.backend/layers/getHourly
       CompatibleRuntimes:
         - !Ref NodeRuntime
 

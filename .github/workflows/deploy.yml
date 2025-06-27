@@ -31,47 +31,44 @@ jobs:
         with:
           node-version: '18'
 
-      - name: Upload node_modules to S3 layer paths
+      - name: Create and upload Lambda layers
         run: |
-          echo "=== Debug: Checking for node_modules directories ==="
-          find lambda -mindepth 2 -maxdepth 2 -type d -name node_modules
+          echo "=== Creating Lambda layer zip files ==="
           
-          if [ $(find lambda -mindepth 2 -maxdepth 2 -type d -name node_modules | wc -l) -eq 0 ]; then
-            echo "No node_modules directories found!"
-            echo "Lambda directory structure:"
-            find lambda -type d | head -10
+          # Check if lambda directory exists
+          if [ ! -d "lambda" ]; then
+            echo "Lambda directory not found, skipping layer creation"
             exit 0
           fi
           
-          find lambda -mindepth 2 -maxdepth 2 -type d -name node_modules | while read dir; do
-            parent=$(dirname "$dir")
-            funcname=$(basename "$parent")
+          # Find all directories that might contain dependencies
+          find lambda -mindepth 1 -maxdepth 2 -type d | while read dir; do
+            funcname=$(basename "$dir")
             
-            echo "=== Processing function: $funcname ==="
-            echo "Directory: $dir"
-            
-            # Test AWS permissions first
-            echo "Testing S3 permissions..."
-            if ! aws s3 ls s3://snotel.info.backend/ > /dev/null 2>&1; then
-              echo "ERROR: Cannot list S3 bucket. Check permissions."
+            # Skip if it's a nested directory we don't want to process
+            if [[ "$dir" == *"/"*"/"* ]] && [[ "$funcname" != "generateState" ]] && [[ "$funcname" != "getState" ]] && [[ "$funcname" != "getHourly" ]]; then
               continue
             fi
             
-            echo "Uploading node_modules for function: $funcname"
-            
-            # Upload with verbose output and error capture
-            if aws s3 sync "$dir" "s3://snotel.info.backend/layers/${funcname}/nodejs/node_modules" --debug 2>&1; then
-              echo "SUCCESS: Uploaded layer for $funcname to S3"
-            else
-              echo "ERROR: Failed to upload layer for $funcname"
-              exit 1
+            # Only process our specific function directories
+            if [[ "$funcname" == "generateState" ]] || [[ "$funcname" == "getState" ]] || [[ "$funcname" == "getHourly" ]]; then
+              echo "=== Processing function: $funcname ==="
+              
+              cd "$dir"
+              if [ -d "node_modules" ] || [ -f "package.json" ] || [ -f "index.js" ]; then
+                echo "Creating zip for $funcname layer"
+                zip -r "${funcname}.zip" .
+                
+                echo "Uploading ${funcname}.zip to S3"
+                aws s3 cp "${funcname}.zip" "s3://snotel.info.backend/layers/${funcname}.zip"
+                
+                echo "SUCCESS: Uploaded layer for $funcname"
+              else
+                echo "No dependencies found for $funcname, skipping"
+              fi
+              cd - > /dev/null
             fi
           done
-
-      - name: Debug - Verify S3 uploads
-        run: |
-          echo "Checking S3 bucket contents:"
-          aws s3 ls s3://snotel.info.backend/layers/
 
       - name: Build and Deploy Lambdas with SAM
         run: |
