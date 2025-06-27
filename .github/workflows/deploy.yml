@@ -31,23 +31,16 @@ jobs:
         with:
           node-version: '18'
 
-      - name: Create and upload layer zips to S3
+      - name: Upload node_modules to S3 layer paths
         run: |
           find lambda -mindepth 2 -maxdepth 2 -type d -name node_modules | while read dir; do
             parent=$(dirname "$dir")
             funcname=$(basename "$parent")
             
-            echo "Processing function: $funcname"
+            echo "Uploading node_modules for function: $funcname"
             
-            # Create nodejs directory and copy node_modules into it
-            mkdir -p "$parent/nodejs"
-            cp -r "$dir" "$parent/nodejs/"
-            
-            # Create zip and upload directly to S3
-            (cd "$parent" && zip -r - "nodejs") | aws s3 cp - "s3://snotel.info.backend/layers/${funcname}-nodejs.zip"
-            
-            # Clean up the temporary nodejs directory
-            rm -rf "$parent/nodejs"
+            # Upload node_modules directly to the layer path
+            aws s3 sync "$dir" "s3://snotel.info.backend/layers/${funcname}/nodejs/node_modules"
             
             echo "Uploaded layer for $funcname to S3"
           done
