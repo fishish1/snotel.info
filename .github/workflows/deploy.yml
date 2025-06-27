@@ -33,16 +33,41 @@ jobs:
 
       - name: Upload node_modules to S3 layer paths
         run: |
+          echo "=== Debug: Lambda directory structure ==="
+          find lambda -type d | head -20
+          echo ""
+          
+          echo "=== Looking for node_modules directories ==="
+          find lambda -mindepth 2 -maxdepth 2 -type d -name node_modules
+          echo ""
+          
           find lambda -mindepth 2 -maxdepth 2 -type d -name node_modules | while read dir; do
             parent=$(dirname "$dir")
             funcname=$(basename "$parent")
             
-            echo "Uploading node_modules for function: $funcname"
+            echo "=== Processing function: $funcname ==="
+            echo "Directory: $dir"
+            echo "Parent: $parent"
+            echo "Target S3 path: s3://snotel.info.backend/layers/${funcname}/nodejs/node_modules"
+            
+            # Check if directory exists and has content
+            if [ -d "$dir" ]; then
+              echo "Directory exists, checking contents:"
+              ls -la "$dir" | head -10
+              echo "File count: $(find "$dir" -type f | wc -l)"
+            else
+              echo "ERROR: Directory $dir does not exist!"
+              continue
+            fi
             
             # Upload node_modules directly to the layer path
+            echo "Starting upload..."
+            aws s3 sync "$dir" "s3://snotel.info.backend/layers/${funcname}/nodejs/node_modules" --dryrun
+            echo "Dry run complete, now doing actual upload..."
             aws s3 sync "$dir" "s3://snotel.info.backend/layers/${funcname}/nodejs/node_modules"
             
-            echo "Uploaded layer for $funcname to S3"
+            echo "Upload completed for $funcname"
+            echo "=========================="
           done
 
       - name: Debug - Verify S3 uploads
