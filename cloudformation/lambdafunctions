@@ -68,10 +68,23 @@ Resources:
       Handler: index.handler # Assumes index.js exports a 'handler' function
       Layers:
         - !Ref GenerateStateLayer
-      Policies:
-        - S3WritePolicy:
-            BucketName: snotel.info
+      Role: !Ref LambdaExecutionRoleArn
       # This function does not have an API Gateway trigger so can only be invoked directly
+
+  GenerateStateS3Policy:
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyName: GenerateStateS3WritePolicy
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Action:
+              - 's3:PutObject'
+              - 's3:PutObjectAcl'
+            Resource: 'arn:aws:s3:::snotel.info/*'
+      Roles:
+        - !Ref LambdaExecutionRoleArn
 
   # Lambda function for getState
   GetStateFunction:
