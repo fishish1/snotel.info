@@ -31,7 +31,7 @@ Resources:
     Properties:
       LayerName: GenerateStateDependencies
       Description: Dependencies for generateState
-      ContentUri: ../lambda/generateState/nodejs.zip
+      ContentUri: ../../lambda/generateState/nodejs.zip
       CompatibleRuntimes:
         - !Ref NodeRuntime
     Metadata:
@@ -42,7 +42,7 @@ Resources:
     Properties:
       LayerName: GetStateDependencies
       Description: Dependencies for getState
-      ContentUri: ../lambda/getState/nodejs.zip
+      ContentUri: ../../lambda/getState/nodejs.zip
       CompatibleRuntimes:
         - !Ref NodeRuntime
     Metadata:
@@ -53,7 +53,7 @@ Resources:
     Properties:
       LayerName: GetHourlyDependencies
       Description: Dependencies for getHourly
-      ContentUri: ../lambda/getHourly/nodejs.zip
+      ContentUri: ../../lambda/getHourly/nodejs.zip
       CompatibleRuntimes:
         - !Ref NodeRuntime
     Metadata:
