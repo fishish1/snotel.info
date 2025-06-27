@@ -12,19 +12,6 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Zip node_modules in lambda subfolders
-        run: |
-          find lambda -mindepth 2 -maxdepth 2 -type d -name node_modules | while read dir; do
-            parent=$(dirname "$dir")
-            # Create nodejs directory and copy node_modules into it
-            mkdir -p "$parent/nodejs"
-            cp -r "$dir" "$parent/nodejs/"
-            # Zip the nodejs directory containing node_modules
-            (cd "$parent" && zip -r "nodejs.zip" "nodejs")
-            # Clean up the temporary nodejs directory
-            rm -rf "$parent/nodejs"
-          done
-
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v2
         with:
@@ -43,6 +30,19 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: '18'
+
+      - name: Zip node_modules in lambda subfolders
+        run: |
+          find lambda -mindepth 2 -maxdepth 2 -type d -name node_modules | while read dir; do
+            parent=$(dirname "$dir")
+            # Create nodejs directory and copy node_modules into it
+            mkdir -p "$parent/nodejs"
+            cp -r "$dir" "$parent/nodejs/"
+            # Zip the nodejs directory containing node_modules
+            (cd "$parent" && zip -r "nodejs.zip" "nodejs")
+            # Clean up the temporary nodejs directory
+            rm -rf "$parent/nodejs"
+          done
 
       - name: Build and Deploy Lambdas with SAM
         run: |
