@@ -34,8 +34,6 @@ Resources:
       ContentUri: s3://snotel.info.backend/layers/generateState-nodejs.zip
       CompatibleRuntimes:
         - !Ref NodeRuntime
-    Metadata:
-      BuildMethod: nodejs22.x
 
   GetStateLayer:
     Type: AWS::Serverless::LayerVersion
@@ -45,8 +43,6 @@ Resources:
       ContentUri: s3://snotel.info.backend/layers/getState-nodejs.zip
       CompatibleRuntimes:
         - !Ref NodeRuntime
-    Metadata:
-      BuildMethod: nodejs22.x
 
   GetHourlyLayer:
     Type: AWS::Serverless::LayerVersion
@@ -56,8 +52,6 @@ Resources:
       ContentUri: s3://snotel.info.backend/layers/getHourly-nodejs.zip
       CompatibleRuntimes:
         - !Ref NodeRuntime
-    Metadata:
-      BuildMethod: nodejs22.x
 
   # Lambda function for generateState
   GenerateStateFunction:
