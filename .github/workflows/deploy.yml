@@ -31,60 +31,7 @@ jobs:
         with:
           node-version: '18'
 
-      - name: Create and upload Lambda layers
-        run: |
-          echo "=== Creating Lambda layer zip files ==="
-          
-          # Check if lambda directory exists
-          if [ ! -d "lambda" ]; then
-            echo "Lambda directory not found, skipping layer creation"
-            exit 0
-          fi
-          
-          # Process each specific function directory
-          for funcname in generateState getState getHourly; do
-            if [ -d "lambda/$funcname" ]; then
-              echo "=== Processing function: $funcname ==="
-              
-              cd "lambda/$funcname"
-              
-              # Create zip regardless of contents (CloudFormation expects it)
-              echo "Creating zip for $funcname layer"
-              zip -r "${funcname}.zip" . -x "*.zip"
-              
-              echo "Uploading ${funcname}.zip to S3"
-              aws s3 cp "${funcname}.zip" "s3://snotel.info.backend/layers/${funcname}.zip"
-              
-              # Verify upload
-              if aws s3 ls "s3://snotel.info.backend/layers/${funcname}.zip"; then
-                echo "SUCCESS: Verified upload of ${funcname}.zip"
-              else
-                echo "ERROR: Failed to verify upload of ${funcname}.zip"
-                exit 1
-              fi
-              
-              cd - > /dev/null
-            else
-              echo "WARNING: Directory lambda/$funcname not found"
-            fi
-          done
-
-      - name: Verify all layer files exist on S3
-        run: |
-          echo "=== Verifying all layer files exist on S3 ==="
-          aws s3 ls s3://snotel.info.backend/layers/
-          
-          # Check each required file
-          for layer in generateState getState getHourly; do
-            if aws s3 ls "s3://snotel.info.backend/layers/${layer}.zip" > /dev/null; then
-              echo "✓ ${layer}.zip exists"
-            else
-              echo "✗ ${layer}.zip missing - this will cause CloudFormation to fail"
-              exit 1
-            fi
-          done
-
       - name: Build and Deploy Lambdas with SAM
         run: |
-          sam build --template-file cloudformation/lambdafunctions
-          sam deploy --no-confirm-changeset --no-fail-on-empty-changeset --stack-name snotel-info-stack --capabilities CAPABILITY_IAM --parameter-overrides CertificateArn=${{ secrets.AWS_CERTIFICATE_ARN }} LambdaExecutionRoleArn=${{ secrets.LAMBDA_EXECUTION_ROLE_ARN }} --s3-bucket snotel.info.backend --template-file cloudformation/lambdafunctions
+          sam build --use-container --template-file cloudformation/lambdafunctions
+          sam deploy --no-confirm-changeset --no-fail-on-empty-changeset --stack-name snotel-info-stack --capabilities CAPABILITY_IAM --parameter-overrides CertificateArn=${{ secrets.AWS_CERTIFICATE_ARN }} LambdaExecutionRoleArn=${{ secrets.LAMBDA_EXECUTION_ROLE_ARN }} --s3-bucket snotel.info.backend

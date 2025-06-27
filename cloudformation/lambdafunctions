@@ -26,32 +26,38 @@ Globals:
 
 Resources:
   # Per Function Lambda Layers
-  # GenerateStateLayer:
-  #   Type: AWS::Serverless::LayerVersion
-  #   Properties:
-  #     LayerName: GenerateStateDependencies
-  #     Description: Dependencies for generateState
-  #     ContentUri: ../layers/generateState/  # Changed from S3 to local path
-  #     CompatibleRuntimes:
-  #       - !Ref NodeRuntime
+  GenerateStateLayer:
+    Type: AWS::Serverless::LayerVersion
+    Properties:
+      LayerName: GenerateStateDependencies
+      Description: Dependencies for generateState
+      ContentUri: ../lambda/generateState
+      CompatibleRuntimes:
+        - !Ref NodeRuntime
+    Metadata:
+      BuildMethod: nodejs22.x
 
-  # GetStateLayer:
-  #   Type: AWS::Serverless::LayerVersion
-  #   Properties:
-  #     LayerName: GetStateDependencies
-  #     Description: Dependencies for getState
-  #     ContentUri: ../layers/getState/  # Changed from S3 to local path
-  #     CompatibleRuntimes:
-  #       - !Ref NodeRuntime
+  GetStateLayer:
+    Type: AWS::Serverless::LayerVersion
+    Properties:
+      LayerName: GetStateDependencies
+      Description: Dependencies for getState
+      ContentUri: ../lambda/getState
+      CompatibleRuntimes:
+        - !Ref NodeRuntime
+    Metadata:
+      BuildMethod: nodejs22.x
 
-  # GetHourlyLayer:
-  #   Type: AWS::Serverless::LayerVersion
-  #   Properties:
-  #     LayerName: GetHourlyDependencies
-  #     Description: Dependencies for getHourly
-  #     ContentUri: ../layers/getHourly/  # Changed from S3 to local path
-  #     CompatibleRuntimes:
-  #       - !Ref NodeRuntime
+  GetHourlyLayer:
+    Type: AWS::Serverless::LayerVersion
+    Properties:
+      LayerName: GetHourlyDependencies
+      Description: Dependencies for getHourly
+      ContentUri: ../lambda/getHourly
+      CompatibleRuntimes:
+        - !Ref NodeRuntime
+    Metadata:
+      BuildMethod: nodejs22.x
 
   # Lambda function for generateState
   GenerateStateFunction:
@@ -60,8 +66,8 @@ Resources:
       FunctionName: generateState
       CodeUri: ../lambda/generateState
       Handler: index.handler # Assumes index.js exports a 'handler' function
-      # Layers:
-      #   - !Ref GenerateStateLayer
+      Layers:
+        - !Ref GenerateStateLayer
       Role: !Ref LambdaExecutionRoleArn
       # This function does not have an API Gateway trigger so can only be invoked directly
 
@@ -72,8 +78,8 @@ Resources:
       FunctionName: getState
       CodeUri: ../lambda/getState
       Handler: index.handler
-      # Layers:
-      #   - !Ref GetStateLayer
+      Layers:
+        - !Ref GetStateLayer
       Role: !Ref LambdaExecutionRoleArn
       Events:
         ApiEvent:
@@ -90,8 +96,8 @@ Resources:
       FunctionName: getHourly
       CodeUri: ../lambda/getHourly
       Handler: index.handler
-      # Layers:
-      #   - !Ref GetHourlyLayer
+      Layers:
+        - !Ref GetHourlyLayer
       Role: !Ref LambdaExecutionRoleArn
       Events:
         ApiEvent:
