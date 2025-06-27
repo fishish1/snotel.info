@@ -41,32 +41,46 @@ jobs:
             exit 0
           fi
           
-          # Find all directories that might contain dependencies
-          find lambda -mindepth 1 -maxdepth 2 -type d | while read dir; do
-            funcname=$(basename "$dir")
-            
-            # Skip if it's a nested directory we don't want to process
-            if [[ "$dir" == *"/"*"/"* ]] && [[ "$funcname" != "generateState" ]] && [[ "$funcname" != "getState" ]] && [[ "$funcname" != "getHourly" ]]; then
-              continue
-            fi
-            
-            # Only process our specific function directories
-            if [[ "$funcname" == "generateState" ]] || [[ "$funcname" == "getState" ]] || [[ "$funcname" == "getHourly" ]]; then
+          # Process each specific function directory
+          for funcname in generateState getState getHourly; do
+            if [ -d "lambda/$funcname" ]; then
               echo "=== Processing function: $funcname ==="
               
-              cd "$dir"
-              if [ -d "node_modules" ] || [ -f "package.json" ] || [ -f "index.js" ]; then
-                echo "Creating zip for $funcname layer"
-                zip -r "${funcname}.zip" .
-                
-                echo "Uploading ${funcname}.zip to S3"
-                aws s3 cp "${funcname}.zip" "s3://snotel.info.backend/layers/${funcname}.zip"
-                
-                echo "SUCCESS: Uploaded layer for $funcname"
+              cd "lambda/$funcname"
+              
+              # Create zip regardless of contents (CloudFormation expects it)
+              echo "Creating zip for $funcname layer"
+              zip -r "${funcname}.zip" . -x "*.zip"
+              
+              echo "Uploading ${funcname}.zip to S3"
+              aws s3 cp "${funcname}.zip" "s3://snotel.info.backend/layers/${funcname}.zip"
+              
+              # Verify upload
+              if aws s3 ls "s3://snotel.info.backend/layers/${funcname}.zip"; then
+                echo "SUCCESS: Verified upload of ${funcname}.zip"
               else
-                echo "No dependencies found for $funcname, skipping"
+                echo "ERROR: Failed to verify upload of ${funcname}.zip"
+                exit 1
               fi
+              
               cd - > /dev/null
+            else
+              echo "WARNING: Directory lambda/$funcname not found"
+            fi
+          done
+
+      - name: Verify all layer files exist on S3
+        run: |
+          echo "=== Verifying all layer files exist on S3 ==="
+          aws s3 ls s3://snotel.info.backend/layers/
+          
+          # Check each required file
+          for layer in generateState getState getHourly; do
+            if aws s3 ls "s3://snotel.info.backend/layers/${layer}.zip" > /dev/null; then
+              echo "✓ ${layer}.zip exists"
+            else
+              echo "✗ ${layer}.zip missing - this will cause CloudFormation to fail"
+              exit 1
             fi
           done
 
