@@ -5,7 +5,7 @@ Description: Snotel.info backend with Lambda functions and layers.
 Parameters:
   NodeRuntime:
     Type: String
-    Default: nodejs18.x
+    Default: nodejs22.x
     Description: The NodeJS runtime for the Lambda functions.
   DomainName:
     Type: String
@@ -35,7 +35,7 @@ Resources:
       CompatibleRuntimes:
         - !Ref NodeRuntime
     Metadata:
-      BuildMethod: nodejs18.x
+      BuildMethod: nodejs22.x
 
   GetStateLayer:
     Type: AWS::Serverless::LayerVersion
@@ -46,7 +46,7 @@ Resources:
       CompatibleRuntimes:
         - !Ref NodeRuntime
     Metadata:
-      BuildMethod: nodejs18.x
+      BuildMethod: nodejs22.x
 
   GetHourlyLayer:
     Type: AWS::Serverless::LayerVersion
@@ -57,7 +57,7 @@ Resources:
       CompatibleRuntimes:
         - !Ref NodeRuntime
     Metadata:
-      BuildMethod: nodejs18.x
+      BuildMethod: nodejs22.x
 
   # Lambda function for generateState
   GenerateStateFunction:

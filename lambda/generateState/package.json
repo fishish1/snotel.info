@@ -11,6 +11,7 @@
     "axios": "^0.27.2",
     "chroma-js": "^2.4.2",
     "easy-soap-request": "^5.0.0",
+    "fs": "^0.0.1-security",
     "geojson": "^0.5.0",
     "xml2json": "^0.12.0"
   }
