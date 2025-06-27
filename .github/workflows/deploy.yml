@@ -33,16 +33,39 @@ jobs:
 
       - name: Upload node_modules to S3 layer paths
         run: |
+          echo "=== Debug: Checking for node_modules directories ==="
+          find lambda -mindepth 2 -maxdepth 2 -type d -name node_modules
+          
+          if [ $(find lambda -mindepth 2 -maxdepth 2 -type d -name node_modules | wc -l) -eq 0 ]; then
+            echo "No node_modules directories found!"
+            echo "Lambda directory structure:"
+            find lambda -type d | head -10
+            exit 0
+          fi
+          
           find lambda -mindepth 2 -maxdepth 2 -type d -name node_modules | while read dir; do
             parent=$(dirname "$dir")
             funcname=$(basename "$parent")
             
+            echo "=== Processing function: $funcname ==="
+            echo "Directory: $dir"
+            
+            # Test AWS permissions first
+            echo "Testing S3 permissions..."
+            if ! aws s3 ls s3://snotel.info.backend/ > /dev/null 2>&1; then
+              echo "ERROR: Cannot list S3 bucket. Check permissions."
+              continue
+            fi
+            
             echo "Uploading node_modules for function: $funcname"
             
-            # Upload node_modules directly to the layer path
-            aws s3 sync "$dir" "s3://snotel.info.backend/layers/${funcname}/nodejs/node_modules"
-            
-            echo "Uploaded layer for $funcname to S3"
+            # Upload with verbose output and error capture
+            if aws s3 sync "$dir" "s3://snotel.info.backend/layers/${funcname}/nodejs/node_modules" --debug 2>&1; then
+              echo "SUCCESS: Uploaded layer for $funcname to S3"
+            else
+              echo "ERROR: Failed to upload layer for $funcname"
+              exit 1
+            fi
           done
 
       - name: Debug - Verify S3 uploads
