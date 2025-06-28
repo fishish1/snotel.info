@@ -25,9 +25,9 @@ Parameters:
 Mappings:
   StageVariablesMap:
     prod:
-      cors_host: "'https://snotel.info'"
+      corshost: "'https://snotel.info'"
     test:
-      cors_host: "'https://localhost:4200'"
+      corshost: "'https://localhost:4200'"
 
 Globals:
   Function:
@@ -179,7 +179,7 @@ Resources:
       Cors:
         AllowMethods: "'GET,OPTIONS'"
         AllowHeaders: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
-        AllowOrigin: !FindInMap [StageVariablesMap, !Ref Stage, cors_host]
+        AllowOrigin: !FindInMap [StageVariablesMap, !Ref Stage, corshost]
       Domain:
         DomainName: !Ref DomainName
         CertificateArn: !Ref CertificateArn

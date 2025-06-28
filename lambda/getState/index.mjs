@@ -23,7 +23,7 @@ export const handler = async (event, context, callback) => {
             headers: {
                 "Content-Type": "application/json",
                 "Access-Control-Allow-Headers": "*",
-                "Access-Control-Allow-Origin": event.stageVariables?.cors_host,
+                "Access-Control-Allow-Origin": event.stageVariables?.corshost,
                 "Access-Control-Allow-Methods": "OPTIONS,POST"
             },
             body: JSON.stringify(raw)

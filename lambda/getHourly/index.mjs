@@ -43,7 +43,7 @@ export const handler = async (event) => {
       headers: {
         "Content-Type": "application/json",
         "Access-Control-Allow-Headers": "*",
-        "Access-Control-Allow-Origin": corsHost,
+        "Access-Control-Allow-Origin": event.stageVariables?.corshost,
         "Access-Control-Allow-Methods": "OPTIONS,POST,GET",
       },
       body: JSON.stringify(todayData || {}),
