@@ -3,13 +3,6 @@ Transform: AWS::Serverless-2016-10-31
 Description: Snotel.info backend with Lambda functions and layers.
 
 Parameters:
-  Stage:
-    Type: String
-    Default: prod
-    Description: The deployment stage (e.g., prod, test).
-    AllowedValues:
-      - prod
-      - test
   NodeRuntime:
     Type: String
     Default: nodejs22.x
@@ -21,19 +14,22 @@ Parameters:
   CertificateArn:
     Type: String
     Description: The ARN of the ACM certificate for the custom domain (must be in us-east-1).
-
-Mappings:
-  StageVariablesMap:
-    prod:
-      corshost: "'https://snotel.info'"
-    test:
-      corshost: "'https://localhost:4200'"
+  ApiStageName:
+    Type: String
+    Default: prod
+    Description: The stage name for the API Gateway.
+    AllowedValues:
+      - prod
+      - test
 
 Globals:
   Function:
     Timeout: 10
     Runtime: !Ref NodeRuntime
     MemorySize: 128
+
+Conditions:
+  IsProdStage: !Equals [!Ref ApiStageName, 'prod']
 
 Resources:
   # IAM Roles
@@ -146,14 +142,7 @@ Resources:
           Properties:
             Path: /state/{state}
             Method: get
-            Cors:
-              AllowMethods: "'GET,OPTIONS'"
-              AllowHeaders: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
-              AllowOrigin: !FindInMap [StageVariablesMap, !Ref Stage, corshost]
-            Domain:
-              DomainName: !Ref DomainName
-              CertificateArn: !Ref CertificateArn
-              EndpointConfiguration: EDGE
+            RestApiId: !Ref SnotelApi
 
   # Lambda function for getHourly
   GetHourlyFunction:
@@ -171,8 +160,25 @@ Resources:
           Properties:
             Path: /hourly/{stationTriplet}
             Method: get
+            RestApiId: !Ref SnotelApi
         ApiEventWithElement:
           Type: Api
           Properties:
             Path: /hourly/{stationTriplet}/{element}
             Method: get
+            RestApiId: !Ref SnotelApi
+
+  SnotelApi:
+    Type: AWS::Serverless::Api
+    Properties:
+      StageName: !Ref ApiStageName
+      Cors:
+        AllowMethods: "'GET,OPTIONS'"
+        AllowHeaders: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
+        AllowOrigin: "'${stageVariables.corshost}'"
+      Variables:
+        corshost: !If [IsProdStage, 'https://snotel.info', 'http://localhost:4200']
+      Domain:
+        DomainName: !Ref DomainName
+        CertificateArn: !Ref CertificateArn
+        EndpointConfiguration: EDGE

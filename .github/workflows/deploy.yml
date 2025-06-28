@@ -34,4 +34,4 @@ jobs:
       - name: Build and Deploy Lambdas with SAM
         run: |
           sam build --use-container --template-file cloudformation/lambdafunctions
-          sam deploy --no-confirm-changeset --no-fail-on-empty-changeset --stack-name snotel-info-stack --capabilities CAPABILITY_IAM --parameter-overrides CertificateArn=${{ secrets.AWS_CERTIFICATE_ARN }} LambdaExecutionRoleArn=${{ secrets.LAMBDA_EXECUTION_ROLE_ARN }} --s3-bucket snotel.info.backend
+          sam deploy --no-confirm-changeset --no-fail-on-empty-changeset --stack-name snotel-info-stack --capabilities CAPABILITY_IAM --parameter-overrides CertificateArn=${{ secrets.AWS_CERTIFICATE_ARN }} --s3-bucket snotel.info.backend
