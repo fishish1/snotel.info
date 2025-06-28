@@ -146,7 +146,14 @@ Resources:
           Properties:
             Path: /state/{state}
             Method: get
-            RestApiId: !Ref SnotelApi
+            Cors:
+              AllowMethods: "'GET,OPTIONS'"
+              AllowHeaders: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
+              AllowOrigin: !FindInMap [StageVariablesMap, !Ref Stage, corshost]
+            Domain:
+              DomainName: !Ref DomainName
+              CertificateArn: !Ref CertificateArn
+              EndpointConfiguration: EDGE
 
   # Lambda function for getHourly
   GetHourlyFunction:
@@ -164,23 +171,8 @@ Resources:
           Properties:
             Path: /hourly/{stationTriplet}
             Method: get
-            RestApiId: !Ref SnotelApi
         ApiEventWithElement:
           Type: Api
           Properties:
             Path: /hourly/{stationTriplet}/{element}
             Method: get
-            RestApiId: !Ref SnotelApi
-
-  SnotelApi:
-    Type: AWS::Serverless::Api
-    Properties:
-      StageName: !Ref Stage
-      Cors:
-        AllowMethods: "'GET,OPTIONS'"
-        AllowHeaders: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
-        AllowOrigin: !FindInMap [StageVariablesMap, !Ref Stage, corshost]
-      Domain:
-        DomainName: !Ref DomainName
-        CertificateArn: !Ref CertificateArn
-        EndpointConfiguration: EDGE
