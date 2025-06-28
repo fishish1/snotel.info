@@ -43,374 +43,320 @@ export async function handler(event, context) {
   const statesToProcess = stateArg ? [stateArg] : states;
 
   for (const state of statesToProcess) {
-    console.log(`Processing state: ${state}`);  
+    console.log(`Processing state: ${state}`);
     try {
-const filename = state + ".json";
-      
-var now = new Date();
-var Today5AM = new Date(
-  now.getFullYear(),
-  now.getMonth(),
-  now.getDate(),
-  now.getHours(),
-  0,
-  0,
-  0
-); 
-    var SixDaysAgo = new Date(Today5AM - 6 * 24 * 60 * 60 * 1000);
-var FiveDaysAgo = new Date(Today5AM - 5 * 24 * 60 * 60 * 1000);
-    var TwoDayAgo = new Date(Today5AM - 2 * 24 * 60 * 60 * 1000);
-var OneDayAgo = new Date(Today5AM - 1 * 24 * 60 * 60 * 1000);
-    var OneDayAhead = new Date(Today5AM.getTime() + 2 * 24 * 60 * 60 * 1000);
-var dates = [OneDayAhead, Today5AM, OneDayAgo, TwoDayAgo, FiveDaysAgo, SixDaysAgo];
-console.log(dates)
-/* console.log(
-  Today5AM.getFullYear() +
-    "-" +
-    Today5AM.getMonth() + 
-    "-" +
-    Today5AM.getDate()
-);
-console.log(
-  OneDayAgo.getFullYear() +
-    "-" +
-    OneDayAgo.getMonth() +
-    "-" +
-    OneDayAgo.getDate()
-);
-console.log(
-  FiveDaysAgo.getFullYear() +
-    "-" +
-    FiveDaysAgo.getMonth() +
-    "-" +
-    FiveDaysAgo.getDate()
-);*/
+      const filename = "assets/" + state + ".json";
 
-  hasWind(state).then(haswindresult => {
+      var now = new Date();
+      var Today5AM = new Date(
+        now.getFullYear(),
+        now.getMonth(),
+        now.getDate(),
+        now.getHours(),
+        0,
+        0,
+        0
+      );
+      var SixDaysAgo = new Date(Today5AM - 6 * 24 * 60 * 60 * 1000);
+      var FiveDaysAgo = new Date(Today5AM - 5 * 24 * 60 * 60 * 1000);
+      var TwoDayAgo = new Date(Today5AM - 2 * 24 * 60 * 60 * 1000);
+      var OneDayAgo = new Date(Today5AM - 1 * 24 * 60 * 60 * 1000);
+      var OneDayAhead = new Date(Today5AM.getTime() + 2 * 24 * 60 * 60 * 1000);
+      var dates = [
+        OneDayAhead,
+        Today5AM,
+        OneDayAgo,
+        TwoDayAgo,
+        FiveDaysAgo,
+        SixDaysAgo,
+      ];
+      console.log(dates);
 
+      const haswindresult = await hasWind(state);
 
+      console.log(haswindresult);
 
-console.log(haswindresult);
+      input =
+        '<?xml version="1.0" encoding="UTF-8"?> ' +
+        '<SOAP-ENV:Envelope xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/" xmlns:q0="http://www.wcc.nrcs.usda.gov/ns/awdbWebService" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"> ' +
+        "  <SOAP-ENV:Body> " +
+        "   <q0:getStations> " +
+        "      <stateCds>" +
+        state +
+        "</stateCds> " +
+        "      <networkCds>SNTL</networkCds> " +
+        "      <logicalAnd>true</logicalAnd> " +
+        "   </q0:getStations>" +
+        " </SOAP-ENV:Body>" +
+        "</SOAP-ENV:Envelope>";
 
-input =
-  '<?xml version="1.0" encoding="UTF-8"?> ' +
-  '<SOAP-ENV:Envelope xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/" xmlns:q0="http://www.wcc.nrcs.usda.gov/ns/awdbWebService" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"> ' +
-  "  <SOAP-ENV:Body> " +
-  "   <q0:getStations> " +
-  "      <stateCds>" +
-  state +
-  "</stateCds> " +
-  "      <networkCds>SNTL</networkCds> " +
-  "      <logicalAnd>true</logicalAnd> " +
-  "   </q0:getStations>" +
-  " </SOAP-ENV:Body>" +
-  "</SOAP-ENV:Envelope>";
+      const result = await getStations(input);
+      var states_stations = JSON.parse(xmlParser.toJson(result));
+      states_stations =
+        states_stations["soap:Envelope"]["soap:Body"][
+          "ns2:getStationsResponse"
+        ]["return"];
 
-//console.log(OneDayAgo.getMonth());
-getStations(input).then(result => {
-  var states_stations = JSON.parse(xmlParser.toJson(result));
-  states_stations =
-    states_stations["soap:Envelope"]["soap:Body"][
-      "ns2:getStationsResponse"
-    ]["return"];
+      var Today_XML = getHourlyXML2(dates[2], dates[0], states_stations, "SNWD");
+      var Yesterday_XML = getHourlyXML2(
+        dates[3],
+        dates[2],
+        states_stations,
+        "SNWD"
+      );
+      var FiveDaysAgo_XML = getHourlyXML2(
+        dates[5],
+        dates[4],
+        states_stations,
+        "SNWD"
+      );
+      var Current_SWE_XML = getHourlyXML2(
+        dates[2],
+        dates[0],
+        states_stations,
+        "WTEQ"
+      );
+      var Historical_SWE_XML = getHistoricalXML(
+        dates[2],
+        dates[0],
+        states_stations,
+        "WTEQ"
+      );
 
-  var Today_XML = getHourlyXML2(dates[2],dates[0], states_stations,"SNWD");
-  //console.log(Today_XML);
-  var Yesterday_XML = getHourlyXML2(dates[3],dates[2], states_stations,"SNWD");
-  //console.log(Yesterday_XML);
-  var FiveDaysAgo_XML = getHourlyXML2(dates[5],dates[4], states_stations,"SNWD");
-      //getHourlyXML(dates[2], states_stations, 0);
-  //console.log(FiveDaysAgo_XML);
-  var Current_SWE_XML = getHourlyXML2(
-    dates[2],
-    dates[0],
-    states_stations,
-    "WTEQ"
-  );
-  var Historical_SWE_XML = getHistoricalXML(
-    dates[2],
-    dates[0],
-    states_stations,
-    "WTEQ"
-  );
+      var Meta_XML = getMetaXML(states_stations);
 
-  var Meta_XML = getMetaXML(states_stations);
-  //console.log(Meta_XML);
+      const meta = await getMeta(Meta_XML);
+      var state_meta = JSON.parse(xmlParser.toJson(meta));
+      state_meta =
+        state_meta["soap:Envelope"]["soap:Body"][
+          "ns2:getStationMetadataMultipleResponse"
+        ]["return"];
 
-  getMeta(Meta_XML).then(meta => {
-    var state_meta = JSON.parse(xmlParser.toJson(meta));
-    state_meta =
-      state_meta["soap:Envelope"]["soap:Body"][
-        "ns2:getStationMetadataMultipleResponse"
-      ]["return"];
-
-    //console.log(state_meta);
-    getHourly(Today_XML).then(TodayXML => {
+      const TodayXML = await getHourly(Today_XML);
       var Today_Data = JSON.parse(xmlParser.toJson(TodayXML));
       Today_Data =
         Today_Data["soap:Envelope"]["soap:Body"][
           "ns2:getHourlyDataResponse"
         ]["return"];
 
-      getHourly(Yesterday_XML).then(YesterdayXML => {
-        var Yesterday_Data = JSON.parse(xmlParser.toJson(YesterdayXML));
-        Yesterday_Data =
-          Yesterday_Data["soap:Envelope"]["soap:Body"][
-            "ns2:getHourlyDataResponse"
-          ]["return"];
+      const YesterdayXML = await getHourly(Yesterday_XML);
+      var Yesterday_Data = JSON.parse(xmlParser.toJson(YesterdayXML));
+      Yesterday_Data =
+        Yesterday_Data["soap:Envelope"]["soap:Body"][
+          "ns2:getHourlyDataResponse"
+        ]["return"];
 
-        getHourly(FiveDaysAgo_XML).then(FiveDaysAgoXML => {
-          var FiveDaysAgo_Data = JSON.parse(
-            xmlParser.toJson(FiveDaysAgoXML)
-          );
-          FiveDaysAgo_Data =
-            FiveDaysAgo_Data["soap:Envelope"]["soap:Body"][
-              "ns2:getHourlyDataResponse"
-            ]["return"];
-          //console.log;
+      const FiveDaysAgoXML = await getHourly(FiveDaysAgo_XML);
+      var FiveDaysAgo_Data = JSON.parse(xmlParser.toJson(FiveDaysAgoXML));
+      FiveDaysAgo_Data =
+        FiveDaysAgo_Data["soap:Envelope"]["soap:Body"][
+          "ns2:getHourlyDataResponse"
+        ]["return"];
 
-          getHourly(Current_SWE_XML).then(CurrentSWEXML => {
-            var CurrentSWE_Data = JSON.parse(
-              xmlParser.toJson(CurrentSWEXML)
+      const CurrentSWEXML = await getHourly(Current_SWE_XML);
+      var CurrentSWE_Data = JSON.parse(xmlParser.toJson(CurrentSWEXML));
+      CurrentSWE_Data =
+        CurrentSWE_Data["soap:Envelope"]["soap:Body"][
+          "ns2:getHourlyDataResponse"
+        ]["return"];
+
+      const HistoricalSWEXML = await getHistorical(Historical_SWE_XML);
+      var HistoricalSWE_Data = JSON.parse(xmlParser.toJson(HistoricalSWEXML));
+      HistoricalSWE_Data =
+        HistoricalSWE_Data["soap:Envelope"]["soap:Body"][
+          "ns2:getAveragesDataResponse"
+        ]["return"];
+
+      var cc;
+      var current_bases = [];
+
+      current_bases = get_best_data_from_object(Today_Data);
+      final_data = [];
+
+      var Today_Object = get_best_data_from_object(Today_Data);
+      var Yesterday_Object = get_best_data_from_object(Yesterday_Data);
+      var FiveDaysAgo_Object = get_best_data_from_object(FiveDaysAgo_Data);
+      var CurrentSWE_Object = get_best_data_from_object(CurrentSWE_Data);
+      var HistoricalSWE_Object =
+        get_best_hist_data_from_object(HistoricalSWE_Data);
+
+      for (cc = 0; cc < state_meta.length; cc++) {
+        final_data[cc] = {};
+        //new row for each object in old data
+        final_data[cc]["stationTriplet"] =
+          state_meta[cc]["stationTriplet"];
+        final_data[cc]["name"] = state_meta[cc]["name"];
+        final_data[cc]["latitude"] = state_meta[cc]["latitude"];
+        final_data[cc]["longitude"] = state_meta[cc]["longitude"];
+        final_data[cc]["Avg"] = parseInt(CurrentSWE_Object[cc]/HistoricalSWE_Object[cc]*100);
+        if(haswindresult.includes(state_meta[cc]["stationTriplet"])==true){
+            final_data[cc]["Wind"] = "Yes"
+           } else final_data[cc]["Wind"] = "No"
+
+        if (Today_Object[cc] > 0) {
+          final_data[cc]["Today"] = Today_Object[cc];
+        } else if (Today_Object[cc] > -10) {
+          final_data[cc]["Today"] = 0;
+        }
+
+        if (Yesterday_Object[cc] > 0) {
+          final_data[cc]["Yesterday"] = Yesterday_Object[cc];
+        } else if (Yesterday_Object[cc] > -10) {
+          final_data[cc]["Yesterday"] = 0;
+        }
+
+        if (FiveDaysAgo_Object[cc] > 0) {
+          final_data[cc]["FiveDaysAgo"] = FiveDaysAgo_Object[cc];
+        } else if (FiveDaysAgo_Object[cc] > -10) {
+          final_data[cc]["FiveDaysAgo"] = 0;
+        }
+
+        if (
+          final_data[cc]["Today"] == -999 ||
+          final_data[cc]["Today"] == null
+        ) {
+          final_data[cc]["Today"] = final_data[cc]["Yesterday"];
+        }
+        if (
+          final_data[cc]["Today"] == -999 ||
+          final_data[cc]["Today"] == null
+        ) {
+          final_data[cc]["Today"] = final_data[cc]["FiveDaysAgo"];
+        }
+
+        if (
+          final_data[cc]["Yesterday"] == -999 ||
+          final_data[cc]["Yesterday"] == null
+        ) {
+          final_data[cc]["Yesterday"] = final_data[cc]["Today"];
+        }
+        if (
+          final_data[cc]["Yesterday"] == -999 ||
+          final_data[cc]["Yesterday"] == null
+        ) {
+          final_data[cc]["Yesterday"] =
+            final_data[cc]["FiveDaysAgo"];
+        }
+
+        if (
+          final_data[cc]["FiveDaysAgo"] == -999 ||
+          final_data[cc]["FiveDaysAgo"] == null
+        ) {
+          final_data[cc]["FiveDaysAgo"] =
+            final_data[cc]["Yesterday"];
+        }
+        if (
+          final_data[cc]["FiveDaysAgo"] == -999 ||
+          final_data[cc]["FiveDaysAgo"] == null
+        ) {
+          final_data[cc]["FiveDaysAgo"] = final_data[cc]["Today"];
+        }
+
+        if (
+          final_data[cc]["Today"] == -999 ||
+          final_data[cc]["Today"] == null
+        ) {
+          final_data[cc]["Today"] = 0;
+        }
+        if (
+          final_data[cc]["Yesterday"] == -999 ||
+          final_data[cc]["Yesterday"] == null
+        ) {
+          final_data[cc]["Yesterday"] = 0;
+        }
+        if (
+          final_data[cc]["FiveDaysAgo"] == -999 ||
+          final_data[cc]["FiveDaysAgo"] == null
+        ) {
+          final_data[cc]["FiveDaysAgo"] = 0;
+        }
+
+        final_data[cc]["OneDayChange"] =
+          final_data[cc]["Today"] - final_data[cc]["Yesterday"];
+        final_data[cc]["FiveDayChange"] =
+          final_data[cc]["Today"] - final_data[cc]["FiveDaysAgo"];
+        final_data[cc]["TodayColor"] = rgbToHex(
+          fb(final_data[cc]["Today"])
+        );
+        final_data[cc]["OneDayColor"] = rgbToHex(
+          f1(final_data[cc]["OneDayChange"])
+        );
+        final_data[cc]["FiveDayColor"] = rgbToHex(
+          f5(final_data[cc]["FiveDayChange"])
+        );
+
+        final_data[cc]["DoubleCheck"] =
+          FiveDaysAgo_Data[cc]["stationTriplet"];
+        final_data[cc]["elevation"] = parseInt(
+          state_meta[cc]["elevation"]
+        );
+        final_data[cc]["elevationColor"] = rgbToHex(
+          fe(state_meta[cc]["elevation"])
+        );
+        final_data[cc]["avgColor"] = rgbToHex(fh(final_data[cc]["Avg"]));
+        if (
+          final_data[cc]["Avg"] < 0 ||
+          final_data[cc]["Avg"] == null ||
+          HistoricalSWE_Object[cc] == null
+        ) {
+          final_data[cc]["avgColor"] = "000000";
+        }
+      }
+      state_data = JSON.stringify(
+        GeoJSON.parse(final_data, {
+          Point: ["latitude", "longitude"],
+        })
+      );
+
+      console.log(JSON.stringify(state_data));
+
+      if (process.env.LOCAL_WRITE === "1") {
+        // Write to local file instead of S3
+        try {
+          const currentDir = process.cwd();
+          const fullPath = `${currentDir}/${filename}`;
+          console.log(`Attempting to write file to: ${fullPath}`);
+          console.log(`Current working directory: ${currentDir}`);
+          console.log(`LOCAL_WRITE env var: ${process.env.LOCAL_WRITE}`);
+
+          fs.writeFileSync(filename, state_data, { encoding: "utf8" });
+
+          // Verify the file was written
+          if (fs.existsSync(filename)) {
+            const stats = fs.statSync(filename);
+            console.log(
+              `${state} JSON saved locally as ${filename} (${stats.size} bytes)`
             );
-            CurrentSWE_Data =
-              CurrentSWE_Data["soap:Envelope"]["soap:Body"][
-                "ns2:getHourlyDataResponse"
-              ]["return"];
-            
-           // console.log("CurrentSWE:", CurrentSWE_Data)
-
-            getHistorical(Historical_SWE_XML).then(HistoricalSWEXML => {
-              //console.log(HistoricalSWEXML);
-
-              var HistoricalSWE_Data = JSON.parse(
-                xmlParser.toJson(HistoricalSWEXML)
-              );
-              HistoricalSWE_Data =
-                HistoricalSWE_Data["soap:Envelope"]["soap:Body"][
-                  "ns2:getAveragesDataResponse"
-                ]["return"];
-
-              var cc;
-              var current_bases = [];
-
-              current_bases = get_best_data_from_object(Today_Data);
-              final_data = [];
-
-              var Today_Object = get_best_data_from_object(Today_Data);
-              var Yesterday_Object = get_best_data_from_object(
-                Yesterday_Data
-              );
-              var FiveDaysAgo_Object = get_best_data_from_object(
-                FiveDaysAgo_Data
-              );
-var CurrentSWE_Object = get_best_data_from_object(
-                CurrentSWE_Data
-              );
-              //console.log(HistoricalSWE_Data);
-var HistoricalSWE_Object = get_best_hist_data_from_object(
-                HistoricalSWE_Data
-              );      
-               // console.log(JSON.stringify(HistoricalSWE_Object));
-              /*
-          console.log("Today",Today_Object.length);
-          console.log("Yesterday",Yesterday_Object.length);
-          console.log("Five",FiveDaysAgo_Object.length);
-           console.log("Meta", state_meta.length); 
-        */
-
-              for (cc = 0; cc < state_meta.length; cc++) {
-                final_data[cc] = {};
-                //new row for each object in old data
-                final_data[cc]["stationTriplet"] =
-                  state_meta[cc]["stationTriplet"];
-                final_data[cc]["name"] = state_meta[cc]["name"];
-                final_data[cc]["latitude"] = state_meta[cc]["latitude"];
-                final_data[cc]["longitude"] = state_meta[cc]["longitude"];
-                //final_data[cc]["CSWE"] = CurrentSWE_Object[cc];
-                //final_data[cc]["HSWE"] = HistoricalSWE_Object[cc];
-                final_data[cc]["Avg"] = parseInt(CurrentSWE_Object[cc]/HistoricalSWE_Object[cc]*100);
-                if(haswindresult.includes(state_meta[cc]["stationTriplet"])==true){
-                    final_data[cc]["Wind"] = "Yes"
-                   } else final_data[cc]["Wind"] = "No"
-
-//console.log(JSON.stringify(CurrentSWE_Data));
-                //c//onsole.log(JSON.stringify(Today_Object));
-
-                if (Today_Object[cc] > 0) {
-                  final_data[cc]["Today"] = Today_Object[cc];
-                } else if (Today_Object[cc] > -10) {
-                  final_data[cc]["Today"] = 0;
-                }
-
-                if (Yesterday_Object[cc] > 0) {
-                  final_data[cc]["Yesterday"] = Yesterday_Object[cc];
-                } else if (Yesterday_Object[cc] > -10) {
-                  final_data[cc]["Yesterday"] = 0;
-                }
-
-                if (FiveDaysAgo_Object[cc] > 0) {
-                  final_data[cc]["FiveDaysAgo"] = FiveDaysAgo_Object[cc];
-                } else if (FiveDaysAgo_Object[cc] > -10) {
-                  final_data[cc]["FiveDaysAgo"] = 0;
-                }
-
-                if (
-                  final_data[cc]["Today"] == -999 ||
-                  final_data[cc]["Today"] == null
-                ) {
-                  final_data[cc]["Today"] = final_data[cc]["Yesterday"];
-                }
-                if (
-                  final_data[cc]["Today"] == -999 ||
-                  final_data[cc]["Today"] == null
-                ) {
-                  final_data[cc]["Today"] = final_data[cc]["FiveDaysAgo"];
-                }
-
-                if (
-                  final_data[cc]["Yesterday"] == -999 ||
-                  final_data[cc]["Yesterday"] == null
-                ) {
-                  final_data[cc]["Yesterday"] = final_data[cc]["Today"];
-                }
-                if (
-                  final_data[cc]["Yesterday"] == -999 ||
-                  final_data[cc]["Yesterday"] == null
-                ) {
-                  final_data[cc]["Yesterday"] =
-                    final_data[cc]["FiveDaysAgo"];
-                }
-
-                if (
-                  final_data[cc]["FiveDaysAgo"] == -999 ||
-                  final_data[cc]["FiveDaysAgo"] == null
-                ) {
-                  final_data[cc]["FiveDaysAgo"] =
-                    final_data[cc]["Yesterday"];
-                }
-                if (
-                  final_data[cc]["FiveDaysAgo"] == -999 ||
-                  final_data[cc]["FiveDaysAgo"] == null
-                ) {
-                  final_data[cc]["FiveDaysAgo"] = final_data[cc]["Today"];
-                }
-
-                if (
-                  final_data[cc]["Today"] == -999 ||
-                  final_data[cc]["Today"] == null
-                ) {
-                  final_data[cc]["Today"] = 0;
-                }
-                if (
-                  final_data[cc]["Yesterday"] == -999 ||
-                  final_data[cc]["Yesterday"] == null
-                ) {
-                  final_data[cc]["Yesterday"] = 0;
-                }
-                if (
-                  final_data[cc]["FiveDaysAgo"] == -999 ||
-                  final_data[cc]["FiveDaysAgo"] == null
-                ) {
-                  final_data[cc]["FiveDaysAgo"] = 0;
-                }
-
-                final_data[cc]["OneDayChange"] =
-                  final_data[cc]["Today"] - final_data[cc]["Yesterday"];
-                final_data[cc]["FiveDayChange"] =
-                  final_data[cc]["Today"] - final_data[cc]["FiveDaysAgo"];
-                final_data[cc]["TodayColor"] = rgbToHex(
-                  fb(final_data[cc]["Today"])
-                );
-                final_data[cc]["OneDayColor"] = rgbToHex(
-                  f1(final_data[cc]["OneDayChange"])
-                );
-                final_data[cc]["FiveDayColor"] = rgbToHex(
-                  f5(final_data[cc]["FiveDayChange"])
-                );
-
-                final_data[cc]["DoubleCheck"] =
-                  FiveDaysAgo_Data[cc]["stationTriplet"];
-                final_data[cc]["elevation"] = parseInt(
-                  state_meta[cc]["elevation"]
-                );
-                final_data[cc]["elevationColor"] = rgbToHex(
-                  fe(state_meta[cc]["elevation"])
-                );
-                final_data[cc]["avgColor"] = rgbToHex(
-                  fh(final_data[cc]["Avg"])
-                );
-                  if (
-                  final_data[cc]["Avg"] < 0 || 
-                  final_data[cc]["Avg"] == null ||
-                  HistoricalSWE_Object[cc] == null) {
-                  final_data[cc]["avgColor"] = '000000';
-                }
-                //if(cc==state_meta.length-1){console.log(state)}
-              }
-              //states_data[i] = [];
-              state_data = JSON.stringify(GeoJSON.parse(final_data, {
-                Point: ["latitude", "longitude"]
-              }));
-              //sleep (3000);
-              //console.log("BEEF: ", i);
-
-
-             console.log(JSON.stringify(state_data));
-              //console.log(JSON.stringify(states_data[i]));
-              
-              console.log(JSON.stringify(state_data));
-      
-              if (process.env.LOCAL_WRITE === '1') {
-                // Write to local file instead of S3
-                try {
-                  const currentDir = process.cwd();
-                  const fullPath = `${currentDir}/${filename}`;
-                  console.log(`Attempting to write file to: ${fullPath}`);
-                  console.log(`Current working directory: ${currentDir}`);
-                  console.log(`LOCAL_WRITE env var: ${process.env.LOCAL_WRITE}`);
-                  
-                  fs.writeFileSync(filename, state_data, { encoding: "utf8" });
-                  
-                  // Verify the file was written
-                  if (fs.existsSync(filename)) {
-                    const stats = fs.statSync(filename);
-                    console.log(`${state} JSON saved locally as ${filename} (${stats.size} bytes)`);
-                  } else {
-                    console.error(`File ${filename} was not created successfully`);
-                  }
-                } catch (err) {
-                  console.error("Failed to write local file:", err);
-                  console.error("Error details:", {
-                    code: err.code,
-                    path: err.path,
-                    message: err.message
-                  });
-                }
-              } else if (process.env.DRY_RUN !== 'true') {
-                s3.putObject({
-                  Bucket: bucketName,
-                  Key: filename,
-                  Body: state_data,
-                  ContentType: "application/json"
-                }).promise();
-                console.log(state, "JSON saved to S3");
-              } else {
-                console.log("DRY_RUN is set. Skipping S3 upload.");
-              }  
-
-              
-            });
+          } else {
+            console.error(`File ${filename} was not created successfully`);
+          }
+        } catch (err) {
+          console.error("Failed to write local file:", err);
+          console.error("Error details:", {
+            code: err.code,
+            path: err.path,
+            message: err.message,
           });
-        });
-      });
-    });
-  });
-});
-});
-  
-
-   } catch (err) {
+        }
+      } else if (process.env.DRY_RUN !== "true") {
+        console.log(`Attempting to write ${filename} to S3 bucket ${bucketName}.`);
+        try {
+          await s3
+            .putObject({
+              Bucket: bucketName,
+              Key: filename,
+              Body: state_data,
+              ContentType: "application/json",
+            })
+            .promise();
+          console.log(`${state} JSON saved to S3 successfully.`);
+        } catch (s3Error) {
+          console.error(`Failed to write ${filename} to S3:`, s3Error);
+        }
+      } else {
+        console.log("DRY_RUN is set. Skipping S3 upload.");
+      }
+    } catch (err) {
       console.error(`Error processing state ${state}:`, err);
     }
   }

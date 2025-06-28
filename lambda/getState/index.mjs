@@ -2,8 +2,9 @@ import AWS from 'aws-sdk';
 
 export const handler = async (event, context, callback) => {
     const s3 = new AWS.S3();
-    const requestBody = JSON.parse(event.body);
-    var retreive_file = "assets/" + requestBody.stateabb + ".json";
+    console.log(event);
+    const requestBody = event.stateabb;
+    var retreive_file = "assets/" + requestBody + ".json";
 
     try {
         const s3Params = {

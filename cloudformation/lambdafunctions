@@ -11,6 +11,10 @@ Parameters:
     Type: String
     Default: api.snotel.info
     Description: The custom domain name for the API Gateway.
+  WebDomainName:
+    Type: String
+    Default: snotel.info
+    Description: The custom domain name for the CloudFront distribution.
   CertificateArn:
     Type: String
     Description: The ARN of the ACM certificate for the custom domain (must be in us-east-1).
@@ -43,6 +47,9 @@ Resources:
               - Effect: Allow
                 Action: 's3:GetObject'
                 Resource: 'arn:aws:s3:::snotel.info/*'
+              - Effect: Allow
+                Action: 's3:ListBucket'
+                Resource: 'arn:aws:s3:::snotel.info'
 
   WriteLambdaExecutionRole:
     Type: AWS::IAM::Role
@@ -157,3 +164,43 @@ Resources:
         DomainName: !Ref DomainName
         CertificateArn: !Ref CertificateArn
         EndpointConfiguration: EDGE
+
+  CloudFrontOriginAccessControl:
+    Type: AWS::CloudFront::OriginAccessControl
+    Properties:
+      OriginAccessControlConfig:
+        Name: !Sub 'OAC for snotel.info S3 bucket'
+        OriginAccessControlOriginType: s3
+        SigningBehavior: always
+        SigningProtocol: sigv4
+
+  CloudFrontDistribution:
+    Type: AWS::CloudFront::Distribution
+    Properties:
+      DistributionConfig:
+        Origins:
+          - Id: S3-snotel.info
+            DomainName: !Sub 'snotel.info.s3.${AWS::Region}.amazonaws.com'
+            OriginAccessControlId: !GetAtt CloudFrontOriginAccessControl.Id
+            S3OriginConfig:
+              OriginAccessIdentity: ''
+        Enabled: true
+        DefaultRootObject: index.html
+        Aliases:
+          - !Ref WebDomainName
+        ViewerCertificate:
+          AcmCertificateArn: !Ref CertificateArn
+          SslSupportMethod: sni-only
+        DefaultCacheBehavior:
+          TargetOriginId: S3-snotel.info
+          ViewerProtocolPolicy: redirect-to-https
+          AllowedMethods:
+            - GET
+            - HEAD
+            - OPTIONS
+          CachedMethods:
+            - GET
+            - HEAD
+            - OPTIONS
+          Compress: true
+          CachePolicyId: 658327ea-f89d-4fab-a63d-7e88639e58f6

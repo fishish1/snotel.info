@@ -94,10 +94,9 @@
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"
     />
 
-    <script src="KoolChartLicense.js">
+   <script src="KoolChartLicense.js">
     </script>
 <script src="https://www.koolchart.com/demo/KoolChart/JS/KoolChart.js"></script>
-    
     <link rel="stylesheet" href="https://www.koolchart.com/demo/KoolChart/Assets/Css/KoolChart.css"/>
     <!-- Add the slick-theme.css if you want default styling -->
     <link
@@ -708,7 +707,7 @@
       }
     </style>
 
-    <script src="https://rawgit.com/moment/moment/2.2.1/min/moment.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.2.1/moment.min.js"></script>
 
     <script>
       //Initiate at 0, 1 for shown, 2 for cancelled: 2 to not show ever
@@ -870,9 +869,9 @@ function divMove(e){
       
       const setWindCharts = async Selected_Site => {
         
-        urlWindSpeed = "/HourlyData/" + Selected_Site + "/WSPDV";
-        urlGustSpeed = "/HourlyData/" + Selected_Site + "/WSPDX";
-        urlWindDirection = "/HourlyData/" + Selected_Site + "/WDIRV";
+        urlWindSpeed = "https://api.snotel.info/hourly/" + Selected_Site + "/WSPDV";
+        urlGustSpeed = "https://api.snotel.info/hourly/" + Selected_Site + "/WSPDX";
+        urlWindDirection = "https://api.snotel.info/hourly/" + Selected_Site + "/WDIRV";
         
          console.log(Selected_SiteName, Selected_Site);
         DisplayString =
@@ -1014,8 +1013,8 @@ var layoutStr =
         if (myChart) myChart.clear();
         //try();
         //const data = await getData(Selected_Site);
-        urlSNWD = "/HourlyData/" + Selected_Site + "/SNWD";
-        urlTOBS = "/HourlyData/" + Selected_Site + "/TOBS";
+        urlSNWD = "https://api.snotel.info/hourly/" + Selected_Site + "/SNWD";
+        urlTOBS = "https://api.snotel.info/hourly/" + Selected_Site + "/TOBS";
         
         const timestamps = [];
         const SnowDepthData = [];
@@ -1500,7 +1499,7 @@ var layoutStr =
         });
 
         const initURL =
-          "https://snotel.info/getState/" + State_Selected;
+          "https://api.snotel.info/state/" + State_Selected;
 
         fetch(initURL) // Call the fetch function passing the url of the API as a parameter
           .then(response => response.text())
@@ -1663,7 +1662,7 @@ function getCookie(c_name) {
     for (i=0;i<ARRcookies.length;i++)
     {
       x=ARRcookies[i].substr(0,ARRcookies[i].indexOf("="));
-      y=ARRcookies[i].substr(ARRcookies[i].indexOf("=")+1);
+      y=ARRcookies[i].substr(0,ARRcookies[i].indexOf("=")+1);
       x=x.replace(/^\s+|\s+$/g,"");
       if (x==c_name)
         {
