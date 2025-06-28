@@ -14,9 +14,6 @@ Parameters:
   CertificateArn:
     Type: String
     Description: The ARN of the ACM certificate for the custom domain (must be in us-east-1).
-  LambdaExecutionRoleArn:
-    Type: String
-    Description: The ARN of the pre-existing IAM role for the Lambda functions.
 
 Globals:
   Function:
@@ -25,6 +22,51 @@ Globals:
     MemorySize: 128
 
 Resources:
+  # IAM Roles
+  BasicLambdaExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: 'sts:AssumeRole'
+      ManagedPolicyArns:
+        - 'arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole'
+      Policies:
+        - PolicyName: S3ReadAccess
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action: 's3:GetObject'
+                Resource: 'arn:aws:s3:::snotel.info/*'
+
+  WriteLambdaExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: 'sts:AssumeRole'
+      ManagedPolicyArns:
+        - 'arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole'
+      Policies:
+        - PolicyName: S3WriteAccessToAssets
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - 's3:PutObject'
+                  - 's3:PutObjectAcl'
+                Resource: 'arn:aws:s3:::snotel.info/assets/*'
+
   # Per Function Lambda Layers
   GenerateStateLayer:
     Type: AWS::Serverless::LayerVersion
@@ -68,7 +110,7 @@ Resources:
       Handler: index.handler # Assumes index.js exports a 'handler' function
       Layers:
         - !Ref GenerateStateLayer
-      Role: !Ref LambdaExecutionRoleArn
+      Role: !GetAtt WriteLambdaExecutionRole.Arn
       # This function does not have an API Gateway trigger so can only be invoked directly
 
   # Lambda function for getState
@@ -80,7 +122,7 @@ Resources:
       Handler: index.handler
       Layers:
         - !Ref GetStateLayer
-      Role: !Ref LambdaExecutionRoleArn
+      Role: !GetAtt BasicLambdaExecutionRole.Arn
       Events:
         ApiEvent:
           Type: Api
@@ -98,7 +140,7 @@ Resources:
       Handler: index.handler
       Layers:
         - !Ref GetHourlyLayer
-      Role: !Ref LambdaExecutionRoleArn
+      Role: !GetAtt BasicLambdaExecutionRole.Arn
       Events:
         ApiEvent:
           Type: Api
