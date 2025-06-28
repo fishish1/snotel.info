@@ -3,8 +3,8 @@ import AWS from 'aws-sdk';
 export const handler = async (event, context, callback) => {
     const s3 = new AWS.S3();
     console.log(event);
-    const requestBody = event.stateabb;
-    var retreive_file = "assets/" + requestBody + ".json";
+    const state = event.pathParameters?.state || event.stateabb;
+    var retreive_file = "assets/" + state + ".json";
 
     try {
         const s3Params = {
@@ -23,7 +23,7 @@ export const handler = async (event, context, callback) => {
             headers: {
                 "Content-Type": "application/json",
                 "Access-Control-Allow-Headers": "*",
-                "Access-Control-Allow-Origin": event.stageVariables.cors_host,
+                "Access-Control-Allow-Origin": event.stageVariables?.cors_host,
                 "Access-Control-Allow-Methods": "OPTIONS,POST"
             },
             body: JSON.stringify(raw)
