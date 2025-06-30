@@ -195,7 +195,7 @@ Resources:
       Name: GenerateStateCO
       Description: 'Schedule to trigger GenerateState function for Colorado at midnight local time'
       ScheduleExpression: 'cron(0 0 * * ? *)'
-      ScheduleExpressionTimeZone: 'America/Denver'
+      ScheduleExpressionTimezone: 'America/Denver'
       FlexibleTimeWindow:
         Mode: 'OFF'
       Target:
@@ -209,7 +209,7 @@ Resources:
       Name: GenerateStateWA
       Description: 'Schedule to trigger GenerateState function for Washington at midnight local time'
       ScheduleExpression: 'cron(0 0 * * ? *)'
-      ScheduleExpressionTimeZone: 'America/Los_Angeles'
+      ScheduleExpressionTimezone: 'America/Los_Angeles'
       FlexibleTimeWindow:
         Mode: 'OFF'
       Target:
@@ -223,7 +223,7 @@ Resources:
       Name: GenerateStateUT
       Description: 'Schedule to trigger GenerateState function for Utah at midnight local time'
       ScheduleExpression: 'cron(0 0 * * ? *)'
-      ScheduleExpressionTimeZone: 'America/Denver'
+      ScheduleExpressionTimezone: 'America/Denver'
       FlexibleTimeWindow:
         Mode: 'OFF'
       Target:
@@ -237,7 +237,7 @@ Resources:
       Name: GenerateStateCA
       Description: 'Schedule to trigger GenerateState function for California at midnight local time'
       ScheduleExpression: 'cron(0 0 * * ? *)'
-      ScheduleExpressionTimeZone: 'America/Los_Angeles'
+      ScheduleExpressionTimezone: 'America/Los_Angeles'
       FlexibleTimeWindow:
         Mode: 'OFF'
       Target:
@@ -251,7 +251,7 @@ Resources:
       Name: GenerateStateAK
       Description: 'Schedule to trigger GenerateState function for Alaska at midnight local time'
       ScheduleExpression: 'cron(0 0 * * ? *)'
-      ScheduleExpressionTimeZone: 'America/Anchorage'
+      ScheduleExpressionTimezone: 'America/Anchorage'
       FlexibleTimeWindow:
         Mode: 'OFF'
       Target:
@@ -265,7 +265,7 @@ Resources:
       Name: GenerateStateWY
       Description: 'Schedule to trigger GenerateState function for Wyoming at midnight local time'
       ScheduleExpression: 'cron(0 0 * * ? *)'
-      ScheduleExpressionTimeZone: 'America/Denver'
+      ScheduleExpressionTimezone: 'America/Denver'
       FlexibleTimeWindow:
         Mode: 'OFF'
       Target:
@@ -279,7 +279,7 @@ Resources:
       Name: GenerateStateMT
       Description: 'Schedule to trigger GenerateState function for Montana at midnight local time'
       ScheduleExpression: 'cron(0 0 * * ? *)'
-      ScheduleExpressionTimeZone: 'America/Denver'
+      ScheduleExpressionTimezone: 'America/Denver'
       FlexibleTimeWindow:
         Mode: 'OFF'
       Target:
@@ -293,7 +293,7 @@ Resources:
       Name: GenerateStateOR
       Description: 'Schedule to trigger GenerateState function for Oregon at midnight local time'
       ScheduleExpression: 'cron(0 0 * * ? *)'
-      ScheduleExpressionTimeZone: 'America/Los_Angeles'
+      ScheduleExpressionTimezone: 'America/Los_Angeles'
       FlexibleTimeWindow:
         Mode: 'OFF'
       Target:
@@ -307,7 +307,7 @@ Resources:
       Name: GenerateStateAZ
       Description: 'Schedule to trigger GenerateState function for Arizona at midnight local time'
       ScheduleExpression: 'cron(0 0 * * ? *)'
-      ScheduleExpressionTimeZone: 'America/Phoenix'
+      ScheduleExpressionTimezone: 'America/Phoenix'
       FlexibleTimeWindow:
         Mode: 'OFF'
       Target:
@@ -321,7 +321,7 @@ Resources:
       Name: GenerateStateNM
       Description: 'Schedule to trigger GenerateState function for New Mexico at midnight local time'
       ScheduleExpression: 'cron(0 0 * * ? *)'
-      ScheduleExpressionTimeZone: 'America/Denver'
+      ScheduleExpressionTimezone: 'America/Denver'
       FlexibleTimeWindow:
         Mode: 'OFF'
       Target:
@@ -335,7 +335,7 @@ Resources:
       Name: GenerateStateNV
       Description: 'Schedule to trigger GenerateState function for Nevada at midnight local time'
       ScheduleExpression: 'cron(0 0 * * ? *)'
-      ScheduleExpressionTimeZone: 'America/Los_Angeles'
+      ScheduleExpressionTimezone: 'America/Los_Angeles'
       FlexibleTimeWindow:
         Mode: 'OFF'
       Target:
@@ -349,7 +349,7 @@ Resources:
       Name: GenerateStateID
       Description: 'Schedule to trigger GenerateState function for Idaho at midnight local time'
       ScheduleExpression: 'cron(0 0 * * ? *)'
-      ScheduleExpressionTimeZone: 'America/Boise'
+      ScheduleExpressionTimezone: 'America/Boise'
       FlexibleTimeWindow:
         Mode: 'OFF'
       Target:
