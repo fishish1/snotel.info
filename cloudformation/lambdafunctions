@@ -57,6 +57,25 @@ Resources:
                 Action: 's3:ListBucket'
                 Resource: 'arn:aws:s3:::snotel.info'
 
+  SchedulerRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: scheduler.amazonaws.com
+            Action: 'sts:AssumeRole'
+      Policies:
+        - PolicyName: InvokeLambdaPolicy
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action: 'lambda:InvokeFunction'
+                Resource: !GetAtt GenerateStateFunction.Arn
+
   WriteLambdaExecutionRole:
     Type: AWS::IAM::Role
     Properties:
@@ -121,6 +140,7 @@ Resources:
       FunctionName: generateState
       CodeUri: ../lambda/generateState
       Handler: index.handler # Assumes index.js exports a 'handler' function
+      Timeout: 140
       Layers:
         - !Ref GenerateStateLayer
       Role: !GetAtt WriteLambdaExecutionRole.Arn
@@ -167,6 +187,175 @@ Resources:
             Path: /hourly/{stationTriplet}/{element}
             Method: get
             RestApiId: !Ref SnotelApi
+
+  # EventBridge Schedules
+  GenerateStateScheduleCO:
+    Type: AWS::Scheduler::Schedule
+    Properties:
+      Name: GenerateStateCO
+      Description: 'Schedule to trigger GenerateState function for Colorado at midnight local time'
+      ScheduleExpression: 'cron(0 0 * * ? *)'
+      ScheduleExpressionTimeZone: 'America/Denver'
+      FlexibleTimeWindow:
+        Mode: 'OFF'
+      Target:
+        Arn: !GetAtt GenerateStateFunction.Arn
+        RoleArn: !GetAtt SchedulerRole.Arn
+        Input: '{"state": "CO"}'
+
+  GenerateStateScheduleWA:
+    Type: AWS::Scheduler::Schedule
+    Properties:
+      Name: GenerateStateWA
+      Description: 'Schedule to trigger GenerateState function for Washington at midnight local time'
+      ScheduleExpression: 'cron(0 0 * * ? *)'
+      ScheduleExpressionTimeZone: 'America/Los_Angeles'
+      FlexibleTimeWindow:
+        Mode: 'OFF'
+      Target:
+        Arn: !GetAtt GenerateStateFunction.Arn
+        RoleArn: !GetAtt SchedulerRole.Arn
+        Input: '{"state": "WA"}'
+
+  GenerateStateScheduleUT:
+    Type: AWS::Scheduler::Schedule
+    Properties:
+      Name: GenerateStateUT
+      Description: 'Schedule to trigger GenerateState function for Utah at midnight local time'
+      ScheduleExpression: 'cron(0 0 * * ? *)'
+      ScheduleExpressionTimeZone: 'America/Denver'
+      FlexibleTimeWindow:
+        Mode: 'OFF'
+      Target:
+        Arn: !GetAtt GenerateStateFunction.Arn
+        RoleArn: !GetAtt SchedulerRole.Arn
+        Input: '{"state": "UT"}'
+
+  GenerateStateScheduleCA:
+    Type: AWS::Scheduler::Schedule
+    Properties:
+      Name: GenerateStateCA
+      Description: 'Schedule to trigger GenerateState function for California at midnight local time'
+      ScheduleExpression: 'cron(0 0 * * ? *)'
+      ScheduleExpressionTimeZone: 'America/Los_Angeles'
+      FlexibleTimeWindow:
+        Mode: 'OFF'
+      Target:
+        Arn: !GetAtt GenerateStateFunction.Arn
+        RoleArn: !GetAtt SchedulerRole.Arn
+        Input: '{"state": "CA"}'
+
+  GenerateStateScheduleAK:
+    Type: AWS::Scheduler::Schedule
+    Properties:
+      Name: GenerateStateAK
+      Description: 'Schedule to trigger GenerateState function for Alaska at midnight local time'
+      ScheduleExpression: 'cron(0 0 * * ? *)'
+      ScheduleExpressionTimeZone: 'America/Anchorage'
+      FlexibleTimeWindow:
+        Mode: 'OFF'
+      Target:
+        Arn: !GetAtt GenerateStateFunction.Arn
+        RoleArn: !GetAtt SchedulerRole.Arn
+        Input: '{"state": "AK"}'
+
+  GenerateStateScheduleWY:
+    Type: AWS::Scheduler::Schedule
+    Properties:
+      Name: GenerateStateWY
+      Description: 'Schedule to trigger GenerateState function for Wyoming at midnight local time'
+      ScheduleExpression: 'cron(0 0 * * ? *)'
+      ScheduleExpressionTimeZone: 'America/Denver'
+      FlexibleTimeWindow:
+        Mode: 'OFF'
+      Target:
+        Arn: !GetAtt GenerateStateFunction.Arn
+        RoleArn: !GetAtt SchedulerRole.Arn
+        Input: '{"state": "WY"}'
+
+  GenerateStateScheduleMT:
+    Type: AWS::Scheduler::Schedule
+    Properties:
+      Name: GenerateStateMT
+      Description: 'Schedule to trigger GenerateState function for Montana at midnight local time'
+      ScheduleExpression: 'cron(0 0 * * ? *)'
+      ScheduleExpressionTimeZone: 'America/Denver'
+      FlexibleTimeWindow:
+        Mode: 'OFF'
+      Target:
+        Arn: !GetAtt GenerateStateFunction.Arn
+        RoleArn: !GetAtt SchedulerRole.Arn
+        Input: '{"state": "MT"}'
+
+  GenerateStateScheduleOR:
+    Type: AWS::Scheduler::Schedule
+    Properties:
+      Name: GenerateStateOR
+      Description: 'Schedule to trigger GenerateState function for Oregon at midnight local time'
+      ScheduleExpression: 'cron(0 0 * * ? *)'
+      ScheduleExpressionTimeZone: 'America/Los_Angeles'
+      FlexibleTimeWindow:
+        Mode: 'OFF'
+      Target:
+        Arn: !GetAtt GenerateStateFunction.Arn
+        RoleArn: !GetAtt SchedulerRole.Arn
+        Input: '{"state": "OR"}'
+
+  GenerateStateScheduleAZ:
+    Type: AWS::Scheduler::Schedule
+    Properties:
+      Name: GenerateStateAZ
+      Description: 'Schedule to trigger GenerateState function for Arizona at midnight local time'
+      ScheduleExpression: 'cron(0 0 * * ? *)'
+      ScheduleExpressionTimeZone: 'America/Phoenix'
+      FlexibleTimeWindow:
+        Mode: 'OFF'
+      Target:
+        Arn: !GetAtt GenerateStateFunction.Arn
+        RoleArn: !GetAtt SchedulerRole.Arn
+        Input: '{"state": "AZ"}'
+
+  GenerateStateScheduleNM:
+    Type: AWS::Scheduler::Schedule
+    Properties:
+      Name: GenerateStateNM
+      Description: 'Schedule to trigger GenerateState function for New Mexico at midnight local time'
+      ScheduleExpression: 'cron(0 0 * * ? *)'
+      ScheduleExpressionTimeZone: 'America/Denver'
+      FlexibleTimeWindow:
+        Mode: 'OFF'
+      Target:
+        Arn: !GetAtt GenerateStateFunction.Arn
+        RoleArn: !GetAtt SchedulerRole.Arn
+        Input: '{"state": "NM"}'
+
+  GenerateStateScheduleNV:
+    Type: AWS::Scheduler::Schedule
+    Properties:
+      Name: GenerateStateNV
+      Description: 'Schedule to trigger GenerateState function for Nevada at midnight local time'
+      ScheduleExpression: 'cron(0 0 * * ? *)'
+      ScheduleExpressionTimeZone: 'America/Los_Angeles'
+      FlexibleTimeWindow:
+        Mode: 'OFF'
+      Target:
+        Arn: !GetAtt GenerateStateFunction.Arn
+        RoleArn: !GetAtt SchedulerRole.Arn
+        Input: '{"state": "NV"}'
+
+  GenerateStateScheduleID:
+    Type: AWS::Scheduler::Schedule
+    Properties:
+      Name: GenerateStateID
+      Description: 'Schedule to trigger GenerateState function for Idaho at midnight local time'
+      ScheduleExpression: 'cron(0 0 * * ? *)'
+      ScheduleExpressionTimeZone: 'America/Boise'
+      FlexibleTimeWindow:
+        Mode: 'OFF'
+      Target:
+        Arn: !GetAtt GenerateStateFunction.Arn
+        RoleArn: !GetAtt SchedulerRole.Arn
+        Input: '{"state": "ID"}'
 
   SnotelApi:
     Type: AWS::Serverless::Api

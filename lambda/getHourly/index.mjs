@@ -10,8 +10,8 @@ const sampleHeaders = {
 
 export const handler = async (event) => {
   try {
-    const site = event.pathParameters?.site;
-    const element = event.pathParameters?.Element || "SNWD";
+    const site = event.pathParameters?.stationTriplet;
+    const element = event.pathParameters?.element || "SNWD";
 
     if (!site) {
       return {
