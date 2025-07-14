@@ -117,6 +117,7 @@
         height: 80%; /* The height is 400 pixels */
         width: 100%; /* The width is the width of the web page */
         left: -0vh;
+        top: 7.5%;
       }
       #legend_title {
         margin-top: 5px;
@@ -204,7 +205,7 @@
       }
       #State_Div {
         position: absolute;
-        top: 25%;
+        top: 30%;
         left: 7.5%;
         height: 100%;
         width: 25%;
@@ -224,7 +225,7 @@
       }
       #install_button {
         position: fixed;
-        display: block;
+        display: none;
         width: 100%;
         top: 2.5%;
         left: 80%;
@@ -291,7 +292,7 @@
       }
       h2 {
         position: absolute;
-        top: 40%;
+        top: 70%;
         left: 50%;
         font-size: 10px;
         color: grey;
@@ -306,7 +307,7 @@
           display: block;
         }
         #map {
-          top: 5%;
+          top: 7.5%;
           height: 80%; /* The height is 400 pixels */
           width: 100%; /* The width is the width of the web page */
         }
@@ -344,7 +345,7 @@
           display: none;
         }
         #map {
-          top: 5%;
+          top: 7.5%;
           height: 80%; /* The height is 400 pixels */
           width: 100%; /* The width is the width of the web page */
         }
@@ -373,7 +374,7 @@
           font-size: 20px;
         }
         #map {
-          top: 5%;
+          top: 7.5%;
           height: 80%; /* The height is 400 pixels */
           width: 100%; /* The width is the width of the web page */
         }
@@ -399,7 +400,7 @@
           left: 0;
         }
         #map {
-          top: 10%;
+          top: 7.5%;
           left: 0vw;
           height: 75%; /* The height is 400 pixels */
           width: 100%; /* The width is the width of the web page */
@@ -440,7 +441,7 @@
         #map {
           height: 80%; /* The height is 400 pixels */
           width: 100%; /* The width is the width of the web page */
-          top: 5%;
+          top: 7.5%;
           left: 0vh;
         }
       }
@@ -467,7 +468,7 @@
           display: none;
         }
         #map {
-          top: 5%;
+          top: 7.5%;
           height: 76%; /* The height is 400 pixels */
           width: 100%; /* The width is the width of the web page */
         }
@@ -513,7 +514,7 @@
           left: 0;
         }
         #map {
-          top: 5%;
+          top: 7.5%;
           height: 70%; /* The height is 400 pixels */
           width: 100%; /* The width is the width of the web page */
         }
@@ -767,7 +768,6 @@
         get_new_map(state_selected, Option);
         try {
           set_state_cookie(state_selected);
-          setCookie("myMapCookie", "", 30); 
           ga("send", "event", "Change State", state_selected, "Cookie Set");
         } catch (error) {
           console.log("Unable to Set Cookie for State Selected", error);
@@ -841,28 +841,17 @@ function divMove(e){
   div.style.left = pageX + 'px';
 }
 
-      const isInStandaloneMode = () =>
-        "standalone" in window.navigator && window.navigator.standalone;
-
       function iOS() {
-        var iDevices = [
-          "iPad Simulator",
-          "iPhone Simulator",
-          "iPod Simulator",
-          "iPad",
-          "iPhone",
-          "iPod"
-        ];
-
-        if (!!navigator.platform) {
-          while (iDevices.length) {
-            if (navigator.platform === iDevices.pop()) {
-              return true;
-            }
-          }
-        }
-
-        return false;
+        return [
+          'iPad Simulator',
+          'iPhone Simulator',
+          'iPod Simulator',
+          'iPad',
+          'iPhone',
+          'iPod'
+        ].includes(navigator.platform)
+        // For iOS 13+
+        || (navigator.userAgent.includes("Mac") && "ontouchend" in document)
       }
     
       let myChart;
@@ -882,9 +871,11 @@ function divMove(e){
       const setData = async Selected_Site => {
         const loadingIndicator = document.getElementById("loading-indicator");
         const snowChartCanvas = document.getElementById("snowChart");
+        const noDataWarning = document.getElementById("no-data-warning");
 
         loadingIndicator.style.display = "block";
         snowChartCanvas.style.visibility = "hidden";
+        noDataWarning.style.display = "none";
 
         try {
           console.log(Selected_SiteName, Selected_Site);
@@ -914,6 +905,11 @@ function divMove(e){
             urls.windDir ? fetchWeather(urls.windDir) : Promise.resolve(null)
           ]);
 
+          if (!rawSNWD || Object.keys(rawSNWD).length === 0) {
+            noDataWarning.style.display = "block";
+            return;
+          }
+
           const timestamps = [];
           const SnowDepthData = [];
           const AirTempData = [];
@@ -938,10 +934,18 @@ function divMove(e){
           }
 
           const dataMap = {};
-          if (rawTOBS) rawTOBS.forEach(d => (dataMap[d.dateTime] = { ...dataMap[d.dateTime], temp: parseInt(d.value) }));
-          if (rawWindSpeed) rawWindSpeed.forEach(d => (dataMap[d.dateTime] = { ...dataMap[d.dateTime], windSpeed: parseInt(d.value) }));
-          if (rawGustSpeed) rawGustSpeed.forEach(d => (dataMap[d.dateTime] = { ...dataMap[d.dateTime], windGust: parseInt(d.value) }));
-          if (rawWindDirection) rawWindDirection.forEach(d => (dataMap[d.dateTime] = { ...dataMap[d.dateTime], windDir: parseInt(d.value) }));
+          if (rawTOBS && Object.keys(rawTOBS).length > 0) {
+            rawTOBS.forEach(d => (dataMap[d.dateTime] = { ...dataMap[d.dateTime], temp: parseInt(d.value) }));
+          }
+          if (rawWindSpeed && Object.keys(rawWindSpeed).length > 0) {
+            rawWindSpeed.forEach(d => (dataMap[d.dateTime] = { ...dataMap[d.dateTime], windSpeed: parseInt(d.value) }));
+          }
+          if (rawGustSpeed && Object.keys(rawGustSpeed).length > 0) {
+            rawGustSpeed.forEach(d => (dataMap[d.dateTime] = { ...dataMap[d.dateTime], windGust: parseInt(d.value) }));
+          }
+          if (rawWindDirection && Object.keys(rawWindDirection).length > 0) {
+            rawWindDirection.forEach(d => (dataMap[d.dateTime] = { ...dataMap[d.dateTime], windDir: parseInt(d.value) }));
+          }
 
           timestamps.forEach(ts => {
             const data = dataMap[ts] || {};
@@ -981,7 +985,7 @@ function divMove(e){
             }
           ];
 
-          if (Selected_Site_HasWind === "Yes") {
+          if (Selected_Site_HasWind === "Yes" && rawWindSpeed && Object.keys(rawWindSpeed).length > 0) {
             datasets.push({
               label: "Avg Wind (mph)",
               data: WindSpeedData,
@@ -991,6 +995,9 @@ function divMove(e){
               pointRadius: 0,
               yAxisID: "y-axis-wind"
             });
+          }
+
+          if (Selected_Site_HasWind === "Yes" && rawGustSpeed && Object.keys(rawGustSpeed).length > 0) {
             datasets.push({
               label: "Max Wind (mph)",
               data: WindGustData,
@@ -1004,7 +1011,7 @@ function divMove(e){
 
           const windDirPlugin = {
             afterDatasetsDraw: function(chart) {
-              if (Selected_Site_HasWind !== "Yes") return;
+              if (Selected_Site_HasWind !== "Yes" || !rawWindDirection || Object.keys(rawWindDirection).length === 0) return;
               const ctx = chart.ctx;
               const windDatasetMeta = chart.getDatasetMeta(1); // Avg Wind dataset
               ctx.save();
@@ -1042,7 +1049,7 @@ function divMove(e){
             }
           ];
 
-          if (Selected_Site_HasWind === "Yes") {
+          if (Selected_Site_HasWind === "Yes" && (rawWindSpeed || rawGustSpeed)) {
             yAxes.push({
               id: "y-axis-wind",
               position: "right",
@@ -1052,6 +1059,10 @@ function divMove(e){
             });
           }
 
+          const chartTitleText = Selected_Site_HasWind === "Yes"
+            ? [DisplayString, "Snow Depth, Temp, & Wind"]
+            : [DisplayString, "Snow Depth & Temp"];
+
           myChart = new Chart(ctx, {
             type: "line",
             data: { labels: chartLabels, datasets: datasets },
@@ -1060,7 +1071,7 @@ function divMove(e){
               maintainAspectRatio: false,
               title: {
                 display: true,
-                text: [DisplayString, "Snow Depth, Temp, & Wind"],
+                text: chartTitleText,
                 fontSize: 20
               },
               tooltips: {
@@ -1075,13 +1086,13 @@ function divMove(e){
                     return `${datasetLabel}: ${tooltipItem.yLabel} mph`;
                   },
                   afterLabel: function(tooltipItem, data) {
-                     if (tooltipItem.datasetIndex === 0) { // Only show for snow depth point
-                        const temp = AirTempData[tooltipItem.index];
-                        if (temp !== undefined) return `Air Temp: ${temp}°F`;
-                     }
+                    if (tooltipItem.datasetIndex === 0) { // Only show for snow depth point
+                      const temp = AirTempData[tooltipItem.index];
+                      if (temp !== undefined) return `Air Temp: ${temp}°F`;
+                    }
                   },
                   footer: function(tooltipItems, data) {
-                    if (Selected_Site_HasWind !== "Yes") return;
+                    if (Selected_Site_HasWind !== "Yes" || !rawWindDirection || Object.keys(rawWindDirection).length === 0) return;
                     const idx = tooltipItems[0].index;
                     const dir = WindDirData[idx];
                     if (dir !== undefined) {
@@ -1469,7 +1480,7 @@ function divMove(e){
         </h2>
       </div>
       <div id="install_button">
-        <button id="butInstall" type="button" onclick="overlay_3_toggle()">
+        <button id="butInstall" type="button">
           App
         </button>
       </div>
@@ -1510,48 +1521,46 @@ function divMove(e){
     <script>
       // Initialize and add the map
       async function setCookie(c_name,value,exdays) {
-    var exdate=new Date();
-    exdate.setDate(exdate.getDate() + exdays);
-    var c_value=escape(value) + ((exdays==null) ? "" : "; expires="+exdate.toUTCString());
-    document.cookie=c_name + "=" + c_value;
-}
-
-function getCookie(c_name) {
-    var i,x,y,ARRcookies=document.cookie.split(";");
-    for (i=0;i<ARRcookies.length;i++)
-    {
-      x=ARRcookies[i].substr(0,ARRcookies[i].indexOf("="));
-      y=ARRcookies[i].substr(0,ARRcookies[i].indexOf("=")+1);
-      x=x.replace(/^\s+|\s+$/g,"");
-      if (x==c_name)
-        {
-        return unescape(y);
-        }
+        var exdate=new Date();
+        exdate.setDate(exdate.getDate() + exdays);
+        var c_value=escape(value) + ((exdays==null) ? "" : "; expires="+exdate.toUTCString());
+        document.cookie=c_name + "=" + c_value;
       }
-    return "";
-}
+
+      function getCookie(c_name) {
+        var i,x,y,ARRcookies=document.cookie.split(";");
+        for (i=0;i<ARRcookies.length;i++) {
+          x=ARRcookies[i].substr(0,ARRcookies[i].indexOf("="));
+          y=ARRcookies[i].substr(ARRcookies[i].indexOf("=")+1);
+          x=x.replace(/^\s+|\s+$/g,"");
+          if (x==c_name) {
+            return unescape(y);
+          }
+        }
+        return "";
+      }
       
       async function saveMapState() { 
-    var mapZoom=map.getZoom(); 
-    var mapCentre=map.getCenter(); 
-    var mapLat=mapCentre.lat(); 
-    var mapLng=mapCentre.lng(); 
-    var cookiestring=mapLat+"_"+mapLng+"_"+mapZoom; 
-    setCookie("myMapCookie",cookiestring, 30); 
-} 
+        var mapZoom=map.getZoom(); 
+        var mapCentre=map.getCenter(); 
+        var mapLat=mapCentre.lat(); 
+        var mapLng=mapCentre.lng(); 
+        var cookiestring=mapLat+"_"+mapLng+"_"+mapZoom; 
+        setCookie("myMapCookie",cookiestring, 30); 
+      } 
       
       function tilesLoaded() {
-    google.maps.event.clearListeners(map, 'tilesloaded');
-    google.maps.event.addListener(map, 'zoom_changed', saveMapState);
-    google.maps.event.addListener(map, 'dragend', saveMapState);
-}   
+        google.maps.event.clearListeners(map, 'tilesloaded');
+        google.maps.event.addListener(map, 'zoom_changed', saveMapState);
+        google.maps.event.addListener(map, 'dragend', saveMapState);
+      }   
       
       function initMap() {
         var gotCookieString=getCookie("myMapCookie"); 
-    var splitStr = gotCookieString.split("_");
-    var savedMapLat = parseFloat(splitStr[0]);
-    var savedMapLng = parseFloat(splitStr[1]);
-    var savedMapZoom = parseFloat(splitStr[2]);
+        var splitStr = gotCookieString.split("_");
+        var savedMapLat = parseFloat(splitStr[0]);
+        var savedMapLng = parseFloat(splitStr[1]);
+        var savedMapZoom = parseFloat(splitStr[2]);
 
         var cookie = getCookie("state");
         console.log(cookie);
@@ -1562,10 +1571,10 @@ function getCookie(c_name) {
           map = get_new_map(cookie, Option);
           document.getElementById("State_Selecter").value = cookie;
         }
-            if ((!isNaN(savedMapLat)) && (!isNaN(savedMapLng)) && (!isNaN(savedMapZoom))) {
-        map.setCenter(new google.maps.LatLng(savedMapLat,savedMapLng));
-        map.setZoom(savedMapZoom);
-    }
+        if ((!isNaN(savedMapLat)) && (!isNaN(savedMapLng)) && (!isNaN(savedMapZoom))) {
+          map.setCenter(new google.maps.LatLng(savedMapLat,savedMapLng));
+          map.setZoom(savedMapZoom);
+        }
         google.maps.event.addListener(map, 'tilesloaded', tilesLoaded);
       }
     </script>
@@ -1598,12 +1607,6 @@ function getCookie(c_name) {
     </div>
 
     <script>
-      if (iOS() == false || isInStandaloneMode()) {
-        document.getElementById("butInstall").style.display = "none";
-        //document.getElementById("butInstall").style.top = "50%";
-        // document.getElementById("butInstall").style.left = "85%";
-      }
-
       function returnToMap() {
         var legend = document.getElementById("legenddiv");
         var x = document.getElementById("map");
@@ -1633,6 +1636,12 @@ function getCookie(c_name) {
         style="display: none; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: black; font-size: 24px; z-index: 2;"
       >
         Loading Site Data...
+      </div>
+      <div
+        id="no-data-warning"
+        style="display: none; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: red; font-size: 24px; z-index: 2;"
+      >
+        Site did not return data.
       </div>
       <canvas id="snowChart" />
     </div>
@@ -1718,8 +1727,9 @@ function getCookie(c_name) {
         changeData(Option);
       });
     </script>
+    <script src="install.js"></script>
   </body>
-  <script src="install.js"></script>
+  
 
   <script>
     if ("serviceWorker" in navigator) {

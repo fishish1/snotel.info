@@ -64,14 +64,11 @@ self.addEventListener('activate', (evt) => {
   self.clients.claim();
 });
 
-
-
-
 self.addEventListener('fetch', (evt) => {
-  /*
+  
   console.log('[ServiceWorker] Fetch', evt.request.url);
   // CODELAB: Add fetch event handler here.
-  if (evt.request.url.includes('HourlyData')) {
+  if (evt.request.url.includes('/hourly/')) {
     console.log('[Service Worker] Fetch (data)', evt.request.url);
     evt.respondWith(
         caches.open(DATA_CACHE_NAME).then((cache) => {
@@ -84,7 +81,6 @@ self.addEventListener('fetch', (evt) => {
                 return response;
               }).catch((err) => {
                 // Network request failed, try to get it from the cache.
-            console.log(err);
                 return cache.match(evt.request);
               });
         }));
@@ -99,5 +95,5 @@ self.addEventListener('fetch', (evt) => {
             });
       })
   );
-*/
+
 });
