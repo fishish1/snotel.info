@@ -103,10 +103,10 @@ jobs:
           echo "SchedulerRoleArn: $SCHEDULER_ROLE_ARN"
 
           # Deploy Schedules Stack
-          echo "Deploying Schedules Stack..."
-          aws cloudformation deploy \
-            --template-file cloudformation/schedules.yaml \
-            --stack-name snotel-info-schedules \
-            --parameter-overrides \
-              GenerateStateFunctionArn="$GENERATE_STATE_ARN" \
-              SchedulerRoleArn="$SCHEDULER_ROLE_ARN"
+          # echo "Deploying Schedules Stack..."
+          # aws cloudformation deploy \
+          #   --template-file cloudformation/schedules.yaml \
+          #   --stack-name snotel-info-schedules \
+          #   --parameter-overrides \
+          #     GenerateStateFunctionArn="$GENERATE_STATE_ARN" \
+          #     SchedulerRoleArn="$SCHEDULER_ROLE_ARN"
