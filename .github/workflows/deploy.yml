@@ -44,7 +44,8 @@ jobs:
               
               pushd "lambda/$dir" > /dev/null
 
-              # 1. Install Dependencies
+              # 1. Install Dependencies (Force Clean Install)
+              rm -rf node_modules package-lock.json
               npm install --production
 
               # 2. Prepare Layer (nodejs/node_modules)
