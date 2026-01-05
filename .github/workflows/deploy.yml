@@ -39,6 +39,7 @@ jobs:
           upload_artifact() {
               local dir=$1
               local name=$2
+              local versioned_name="${name}-${GITHUB_SHA}"
               
               echo "Processing $name..."
               
@@ -57,7 +58,7 @@ jobs:
                   cp -r node_modules temp_layer/nodejs/
                   
                   # Zip Layer
-                  local layer_zip="${name}Layer.zip"
+                  local layer_zip="${versioned_name}Layer.zip"
                   cd temp_layer
                   zip -r -q "../$layer_zip" .
                   cd ..
@@ -66,19 +67,25 @@ jobs:
                   echo "Uploading Layer to s3://$BUCKET/layers/$layer_zip..."
                   aws s3 cp "$layer_zip" "s3://$BUCKET/layers/$layer_zip"
                   rm "$layer_zip"
+                  
+                  # Update Template with new Layer URI
+                  sed -i "s|s3://$BUCKET/layers/${name}Layer.zip|s3://$BUCKET/layers/$layer_zip|g" ../../cloudformation/lambdafunctions
               fi
               
               rm -rf temp_layer
 
               # 3. Prepare Code (Function only)
               echo "Preparing Code..."
-              local code_zip="${name}.zip"
+              local code_zip="${versioned_name}.zip"
               zip -r -q "$code_zip" . -x "node_modules/*" -x "*.zip"
 
               # Upload Code
               echo "Uploading Code to s3://$BUCKET/lambda/$code_zip..."
               aws s3 cp "$code_zip" "s3://$BUCKET/lambda/$code_zip"
               rm "$code_zip"
+              
+              # Update Template with new Code URI
+              sed -i "s|s3://$BUCKET/lambda/${name}.zip|s3://$BUCKET/lambda/$code_zip|g" ../../cloudformation/lambdafunctions
 
               popd > /dev/null
           }
