@@ -6,7 +6,7 @@ import soapRequest from "easy-soap-request";
 import AWS from "aws-sdk";
 import fs from "fs";
 
-const states = ["CO","WA", "UT", "CA", "AK", "WY", "MT", "OR", "AZ", "NM", "NV", "ID"];
+const states = ["CO", "WA", "UT", "CA", "AK", "WY", "MT", "OR", "AZ", "NM", "NV", "ID"];
 
 let final_data = [];
 let states_data = [states.length];
@@ -73,6 +73,7 @@ export async function handler(event, context) {
       console.log(dates);
 
       const haswindresult = await hasWind(state);
+      const hasWindSet = new Set(haswindresult);
 
       console.log(haswindresult);
 
@@ -94,78 +95,52 @@ export async function handler(event, context) {
       var states_stations = JSON.parse(xmlParser.toJson(result));
       states_stations =
         states_stations["soap:Envelope"]["soap:Body"][
-          "ns2:getStationsResponse"
+        "ns2:getStationsResponse"
         ]["return"];
 
+      // Prepare XML requests
       var Today_XML = getHourlyXML2(dates[2], dates[0], states_stations, "SNWD");
-      var Yesterday_XML = getHourlyXML2(
-        dates[3],
-        dates[2],
-        states_stations,
-        "SNWD"
-      );
-      var FiveDaysAgo_XML = getHourlyXML2(
-        dates[5],
-        dates[4],
-        states_stations,
-        "SNWD"
-      );
-      var Current_SWE_XML = getHourlyXML2(
-        dates[2],
-        dates[0],
-        states_stations,
-        "WTEQ"
-      );
-      var Historical_SWE_XML = getHistoricalXML(
-        dates[2],
-        dates[0],
-        states_stations,
-        "WTEQ"
-      );
-
+      var Yesterday_XML = getHourlyXML2(dates[3], dates[2], states_stations, "SNWD");
+      var FiveDaysAgo_XML = getHourlyXML2(dates[5], dates[4], states_stations, "SNWD");
+      var Current_SWE_XML = getHourlyXML2(dates[2], dates[0], states_stations, "WTEQ");
+      var Historical_SWE_XML = getHistoricalXML(dates[2], dates[0], states_stations, "WTEQ");
       var Meta_XML = getMetaXML(states_stations);
 
-      const meta = await getMeta(Meta_XML);
+      // Execute all requests concurrently
+      const [
+        meta,
+        TodayXML,
+        YesterdayXML,
+        FiveDaysAgoXML,
+        CurrentSWEXML,
+        HistoricalSWEXML
+      ] = await Promise.all([
+        getMeta(Meta_XML),
+        getHourly(Today_XML),
+        getHourly(Yesterday_XML),
+        getHourly(FiveDaysAgo_XML),
+        getHourly(Current_SWE_XML),
+        getHistorical(Historical_SWE_XML)
+      ]);
+
+      // Process Responses
       var state_meta = JSON.parse(xmlParser.toJson(meta));
-      state_meta =
-        state_meta["soap:Envelope"]["soap:Body"][
-          "ns2:getStationMetadataMultipleResponse"
-        ]["return"];
+      state_meta = state_meta["soap:Envelope"]["soap:Body"]["ns2:getStationMetadataMultipleResponse"]["return"];
 
-      const TodayXML = await getHourly(Today_XML);
       var Today_Data = JSON.parse(xmlParser.toJson(TodayXML));
-      Today_Data =
-        Today_Data["soap:Envelope"]["soap:Body"][
-          "ns2:getHourlyDataResponse"
-        ]["return"];
+      Today_Data = Today_Data["soap:Envelope"]["soap:Body"]["ns2:getHourlyDataResponse"]["return"];
 
-      const YesterdayXML = await getHourly(Yesterday_XML);
       var Yesterday_Data = JSON.parse(xmlParser.toJson(YesterdayXML));
-      Yesterday_Data =
-        Yesterday_Data["soap:Envelope"]["soap:Body"][
-          "ns2:getHourlyDataResponse"
-        ]["return"];
+      Yesterday_Data = Yesterday_Data["soap:Envelope"]["soap:Body"]["ns2:getHourlyDataResponse"]["return"];
 
-      const FiveDaysAgoXML = await getHourly(FiveDaysAgo_XML);
       var FiveDaysAgo_Data = JSON.parse(xmlParser.toJson(FiveDaysAgoXML));
-      FiveDaysAgo_Data =
-        FiveDaysAgo_Data["soap:Envelope"]["soap:Body"][
-          "ns2:getHourlyDataResponse"
-        ]["return"];
+      FiveDaysAgo_Data = FiveDaysAgo_Data["soap:Envelope"]["soap:Body"]["ns2:getHourlyDataResponse"]["return"];
 
-      const CurrentSWEXML = await getHourly(Current_SWE_XML);
       var CurrentSWE_Data = JSON.parse(xmlParser.toJson(CurrentSWEXML));
-      CurrentSWE_Data =
-        CurrentSWE_Data["soap:Envelope"]["soap:Body"][
-          "ns2:getHourlyDataResponse"
-        ]["return"];
+      CurrentSWE_Data = CurrentSWE_Data["soap:Envelope"]["soap:Body"]["ns2:getHourlyDataResponse"]["return"];
 
-      const HistoricalSWEXML = await getHistorical(Historical_SWE_XML);
       var HistoricalSWE_Data = JSON.parse(xmlParser.toJson(HistoricalSWEXML));
-      HistoricalSWE_Data =
-        HistoricalSWE_Data["soap:Envelope"]["soap:Body"][
-          "ns2:getAveragesDataResponse"
-        ]["return"];
+      HistoricalSWE_Data = HistoricalSWE_Data["soap:Envelope"]["soap:Body"]["ns2:getAveragesDataResponse"]["return"];
 
       var cc;
       var current_bases = [];
@@ -188,10 +163,13 @@ export async function handler(event, context) {
         final_data[cc]["name"] = state_meta[cc]["name"];
         final_data[cc]["latitude"] = state_meta[cc]["latitude"];
         final_data[cc]["longitude"] = state_meta[cc]["longitude"];
-        final_data[cc]["Avg"] = parseInt(CurrentSWE_Object[cc]/HistoricalSWE_Object[cc]*100);
-        if(haswindresult.includes(state_meta[cc]["stationTriplet"])==true){
-            final_data[cc]["Wind"] = "Yes"
-           } else final_data[cc]["Wind"] = "No"
+        final_data[cc]["Avg"] = parseInt(CurrentSWE_Object[cc] / HistoricalSWE_Object[cc] * 100);
+
+        // Optimize wind lookup using Set (created outside loop ideally, but array is small enough here)
+        // Better: Create Set outside loop.
+        if (hasWindSet.has(state_meta[cc]["stationTriplet"])) {
+          final_data[cc]["Wind"] = "Yes"
+        } else final_data[cc]["Wind"] = "No"
 
         if (Today_Object[cc] > 0) {
           final_data[cc]["Today"] = Today_Object[cc];
@@ -364,34 +342,34 @@ export async function handler(event, context) {
 
 async function hasWind(Selected_State) {
   var wind_stations;
-  
-      input =
-'<?xml version="1.0" encoding="UTF-8"?> ' +
-'<SOAP-ENV:Envelope xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/" xmlns:q0="http://www.wcc.nrcs.usda.gov/ns/awdbWebService" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"> ' +
-"  <SOAP-ENV:Body> " +
-"   <q0:getStations> " +
-"      <networkCds>SNTL</networkCds> " +
-"      <stateCds>" +
-Selected_State +
-"</stateCds> " +
-"        <elementCds>WSPDV</elementCds>" +
-"      <logicalAnd>true</logicalAnd> " +
-"   </q0:getStations>" +
-" </SOAP-ENV:Body>" +
-"</SOAP-ENV:Envelope>";
 
-//console.log(OneDayAgo.getMonth());
-var result = await getStations(input)
- wind_stations = JSON.parse(xmlParser.toJson(result));
+  input =
+    '<?xml version="1.0" encoding="UTF-8"?> ' +
+    '<SOAP-ENV:Envelope xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/" xmlns:q0="http://www.wcc.nrcs.usda.gov/ns/awdbWebService" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"> ' +
+    "  <SOAP-ENV:Body> " +
+    "   <q0:getStations> " +
+    "      <networkCds>SNTL</networkCds> " +
+    "      <stateCds>" +
+    Selected_State +
+    "</stateCds> " +
+    "        <elementCds>WSPDV</elementCds>" +
+    "      <logicalAnd>true</logicalAnd> " +
+    "   </q0:getStations>" +
+    " </SOAP-ENV:Body>" +
+    "</SOAP-ENV:Envelope>";
+
+  //console.log(OneDayAgo.getMonth());
+  var result = await getStations(input)
+  wind_stations = JSON.parse(xmlParser.toJson(result));
   console.log(wind_stations);
-wind_stations =
-  wind_stations["soap:Envelope"]["soap:Body"][
+  wind_stations =
+    wind_stations["soap:Envelope"]["soap:Body"][
     "ns2:getStationsResponse"
-  ]["return"];
-                return(wind_stations);
+    ]["return"];
+  return (wind_stations);
 
 
-                      }  
+}
 
 async function getStations(XML_String) {
   console.log(XML_String)
@@ -472,7 +450,8 @@ function getHourlyXML2(StartTime, EndTime, Stations, Element) {
   var j;
   try {
     for (j = 0; j < Stations.length; j++) {
-    input2 = input2 + "<stationTriplets>" + Stations[j] + "</stationTriplets>";}
+      input2 = input2 + "<stationTriplets>" + Stations[j] + "</stationTriplets>";
+    }
   } catch (err) {
     //}
     console.log("No Object From Stations", err.message);
@@ -540,7 +519,7 @@ function getHistoricalXML(StartTime, EndTime, Stations, Element) {
         input2 + "<stationTriplets>" + Stations[j] + "</stationTriplets>";
     }
   } catch (err) {
-    
+
     console.log("No Object From Stations", err.message);
   }
 
@@ -566,12 +545,12 @@ function getHistoricalXML(StartTime, EndTime, Stations, Element) {
     "</q0:getAveragesData>" +
     "</SOAP-ENV:Body>" +
     "</SOAP-ENV:Envelope>";
- // console.log(input2);
+  // console.log(input2);
   return input2;
 }
 function getMetaXML(Stations) {
   var input2;
-console.log("Stations Received:", Stations);
+  console.log("Stations Received:", Stations);
   /*
   <?xml version="1.0" encoding="UTF-8"?>
 <SOAP-ENV:Envelope xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/" xmlns:q0="http://www.wcc.nrcs.usda.gov/ns/awdbWebService" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
@@ -622,7 +601,7 @@ function get_best_data_from_object(Object) {
           var ii;
           //console.log(Object[cc]["values"].length);
           var Found_Good_Data = false;
-          
+
           for (ii = Object[ccc]["values"].length; ii > 0; ii--) {
             if (Found_Good_Data == false) {
               if (typeof Object[ccc]["values"][ii - 1] !== "undefined") {
@@ -653,35 +632,35 @@ function get_best_data_from_object(Object) {
   return Return_Object;
 }
 
-function get_best_hist_data_from_object(Object){
+function get_best_hist_data_from_object(Object) {
   var ccc = 0;
   var Return_Object = [];
   for (ccc = 0; ccc < Object.length; ccc++) {
     if (ccc in Object) {
       if (["values"] in Object[ccc]) {
-         
-          //if multiple values
-          var ii;
-          //console.log(Object[cc]["values"].length);
-          var total = 0;
+
+        //if multiple values
+        var ii;
+        //console.log(Object[cc]["values"].length);
+        var total = 0;
         // if (Object[ccc]["flags"][0] == "U") {
-          for (ii = Object[ccc]["values"].length; ii > 0; ii--) {
-            
-               
-                  total = total + parseInt(
-                    Object[ccc]["values"][ii - 1]
-                  );
-              //  }
-        
-          }
-        
+        for (ii = Object[ccc]["values"].length; ii > 0; ii--) {
+
+
+          total = total + parseInt(
+            Object[ccc]["values"][ii - 1]
+          );
+          //  }
+
+        }
+
         Return_Object.push(total / Object[ccc]["values"].length)
 
       } else {
-         Return_Object.push(null)
+        Return_Object.push(null)
       }
     }
-  } 
+  }
 
   //console.log(Return_Object);
   return Return_Object;

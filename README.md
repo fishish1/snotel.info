@@ -24,7 +24,34 @@ The backend consists of several Lambda functions:
 The repository is configured with GitHub Actions for continuous deployment.
 
 1.  **Frontend Deployment**: On a push to the `main` branch, a workflow builds the frontend application and syncs the static files to the S3 bucket configured for website hosting.
-2.  **Backend Deployment**: On a push to the `main` branch, a separate workflow packages and deploys the backend using the CloudFormation template. It creates or updates the API Gateway, Lambda functions, and all related resources.
+2.  **Backend Deployment (Core)**: On a push to the `main` branch, a workflow automatically:
+    *   Installs dependencies (building native modules for Linux x86_64).
+    *   Packages Lambda layers and code into versioned artifacts.
+    *   Uploads artifacts to S3.
+    *   Deploys the `snotel-info-stack` (Lambda functions, API Gateway, Roles).
+
+### Manual Deployment Steps (Schedules)
+
+The EventBridge schedules are defined in a separate stack (`snotel-info-schedules`) and must be deployed manually due to CI permission constraints.
+
+**To deploy or update schedules:**
+
+1.  Ensure you have AWS CLI configured with admin credentials.
+2.  Run the following commands:
+
+```bash
+# Retrieve ARNs from the deployed core stack
+GENERATE_STATE_ARN=$(aws cloudformation describe-stacks --stack-name snotel-info-stack --query "Stacks[0].Outputs[?OutputKey=='GenerateStateFunctionArn'].OutputValue" --output text)
+SCHEDULER_ROLE_ARN=$(aws cloudformation describe-stacks --stack-name snotel-info-stack --query "Stacks[0].Outputs[?OutputKey=='SchedulerRoleArn'].OutputValue" --output text)
+
+# Deploy Schedules Stack
+aws cloudformation deploy \
+  --template-file cloudformation/schedules.yaml \
+  --stack-name snotel-info-schedules \
+  --parameter-overrides \
+    GenerateStateFunctionArn="$GENERATE_STATE_ARN" \
+    SchedulerRoleArn="$SCHEDULER_ROLE_ARN"
+```
 
 ### Manual Setup Prerequisites
 
