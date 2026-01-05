@@ -31,7 +31,82 @@ jobs:
         with:
           node-version: '22'
 
-      - name: Build and Deploy Lambdas with SAM
+      - name: Build, Upload, and Deploy
         run: |
-          sam build --use-container --template-file cloudformation/lambdafunctions
-          sam deploy --no-confirm-changeset --no-fail-on-empty-changeset --stack-name snotel-info-stack --capabilities CAPABILITY_IAM --parameter-overrides CertificateArn=${{ secrets.AWS_CERTIFICATE_ARN }} --s3-bucket snotel.info.backend
+          BUCKET="snotel.info.backend"
+          
+          # Function to zip and upload
+          upload_artifact() {
+              local dir=$1
+              local name=$2
+              
+              echo "Processing $name..."
+              
+              pushd "lambda/$dir" > /dev/null
+
+              # 1. Install Dependencies
+              npm install --production
+
+              # 2. Prepare Layer (nodejs/node_modules)
+              echo "Preparing Layer..."
+              rm -rf temp_layer
+              mkdir -p temp_layer/nodejs
+              
+              if [ -d "node_modules" ]; then
+                  cp -r node_modules temp_layer/nodejs/
+                  
+                  # Zip Layer
+                  local layer_zip="${name}Layer.zip"
+                  cd temp_layer
+                  zip -r -q "../$layer_zip" .
+                  cd ..
+                  
+                  # Upload Layer
+                  echo "Uploading Layer to s3://$BUCKET/layers/$layer_zip..."
+                  aws s3 cp "$layer_zip" "s3://$BUCKET/layers/$layer_zip"
+                  rm "$layer_zip"
+              fi
+              
+              rm -rf temp_layer
+
+              # 3. Prepare Code (Function only)
+              echo "Preparing Code..."
+              local code_zip="${name}.zip"
+              zip -r -q "$code_zip" . -x "node_modules/*" -x "*.zip"
+
+              # Upload Code
+              echo "Uploading Code to s3://$BUCKET/lambda/$code_zip..."
+              aws s3 cp "$code_zip" "s3://$BUCKET/lambda/$code_zip"
+              rm "$code_zip"
+
+              popd > /dev/null
+          }
+
+          # Upload Artifacts
+          upload_artifact "generateState" "generateState"
+          upload_artifact "getState" "getState"
+          upload_artifact "getHourly" "getHourly"
+
+          # Deploy Lambda Stack
+          echo "Deploying Lambda Stack..."
+          aws cloudformation deploy \
+            --template-file cloudformation/lambdafunctions \
+            --stack-name snotel-info-stack \
+            --capabilities CAPABILITY_IAM \
+            --parameter-overrides CertificateArn=${{ secrets.AWS_CERTIFICATE_ARN }}
+
+          # Retrieve Outputs
+          GENERATE_STATE_ARN=$(aws cloudformation describe-stacks --stack-name snotel-info-stack --query "Stacks[0].Outputs[?OutputKey=='GenerateStateFunctionArn'].OutputValue" --output text)
+          SCHEDULER_ROLE_ARN=$(aws cloudformation describe-stacks --stack-name snotel-info-stack --query "Stacks[0].Outputs[?OutputKey=='SchedulerRoleArn'].OutputValue" --output text)
+
+          echo "GenerateStateFunctionArn: $GENERATE_STATE_ARN"
+          echo "SchedulerRoleArn: $SCHEDULER_ROLE_ARN"
+
+          # Deploy Schedules Stack
+          echo "Deploying Schedules Stack..."
+          aws cloudformation deploy \
+            --template-file cloudformation/schedules.yaml \
+            --stack-name snotel-info-schedules \
+            --parameter-overrides \
+              GenerateStateFunctionArn="$GENERATE_STATE_ARN" \
+              SchedulerRoleArn="$SCHEDULER_ROLE_ARN"

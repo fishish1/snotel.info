@@ -105,7 +105,7 @@ Resources:
     Properties:
       LayerName: GenerateStateDependencies
       Description: Dependencies for generateState
-      ContentUri: s3://snotel.info.backend/layers/generateState.zip
+      ContentUri: s3://snotel.info.backend/layers/generateStateLayer.zip
       CompatibleRuntimes:
         - !Ref NodeRuntime
     Metadata:
@@ -116,7 +116,7 @@ Resources:
     Properties:
       LayerName: GetStateDependencies
       Description: Dependencies for getState
-      ContentUri: s3://snotel.info.backend/layers/getState.zip
+      ContentUri: s3://snotel.info.backend/layers/getStateLayer.zip
       CompatibleRuntimes:
         - !Ref NodeRuntime
     Metadata:
@@ -127,7 +127,7 @@ Resources:
     Properties:
       LayerName: GetHourlyDependencies
       Description: Dependencies for getHourly
-      ContentUri: s3://snotel.info.backend/layers/getHourly.zip
+      ContentUri: s3://snotel.info.backend/layers/getHourlyLayer.zip
       CompatibleRuntimes:
         - !Ref NodeRuntime
     Metadata:
@@ -138,7 +138,7 @@ Resources:
     Type: AWS::Serverless::Function
     Properties:
       FunctionName: generateState
-      CodeUri: s3://snotel.info.backend/layers/generateState.zip
+      CodeUri: s3://snotel.info.backend/lambda/generateState.zip
       Handler: index.handler # Assumes index.js exports a 'handler' function
       Timeout: 140
       Layers:
@@ -151,7 +151,7 @@ Resources:
     Type: AWS::Serverless::Function
     Properties:
       FunctionName: getState
-      CodeUri: s3://snotel.info.backend/layers/getState.zip
+      CodeUri: s3://snotel.info.backend/lambda/getState.zip
       Handler: index.handler
       Layers:
         - !Ref GetStateLayer
@@ -169,7 +169,7 @@ Resources:
     Type: AWS::Serverless::Function
     Properties:
       FunctionName: getHourly
-      CodeUri: s3://snotel.info.backend/layers/getHourly.zip
+      CodeUri: s3://snotel.info.backend/lambda/getHourly.zip
       Handler: index.handler
       Layers:
         - !Ref GetHourlyLayer
