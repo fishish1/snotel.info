@@ -27,9 +27,9 @@ jobs:
         uses: aws-actions/setup-sam@v2
       
       - name: Setup Node.js
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
-          node-version: '18'
+          node-version: '22'
 
       - name: Build and Deploy Lambdas with SAM
         run: |
