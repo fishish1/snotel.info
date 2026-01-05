@@ -1,0 +1,179 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: EventBridge schedules for Snotel.info backend.
+
+Parameters:
+  GenerateStateFunctionArn:
+    Type: String
+    Description: The ARN of the GenerateState Lambda function.
+  SchedulerRoleArn:
+    Type: String
+    Description: The ARN of the IAM Role for the Scheduler.
+
+Resources:
+  GenerateStateScheduleCO:
+    Type: AWS::Scheduler::Schedule
+    Properties:
+      Name: GenerateStateCO
+      Description: 'Schedule to trigger GenerateState function for Colorado once per hour'
+      ScheduleExpression: 'cron(0 * * * ? *)'
+      ScheduleExpressionTimezone: 'America/Denver'
+      FlexibleTimeWindow:
+        Mode: 'OFF'
+      Target:
+        Arn: !Ref GenerateStateFunctionArn
+        RoleArn: !Ref SchedulerRoleArn
+        Input: '{"state": "CO"}'
+
+  GenerateStateScheduleWA:
+    Type: AWS::Scheduler::Schedule
+    Properties:
+      Name: GenerateStateWA
+      Description: 'Schedule to trigger GenerateState function for Washington once per hour'
+      ScheduleExpression: 'cron(0 * * * ? *)'
+      ScheduleExpressionTimezone: 'America/Los_Angeles'
+      FlexibleTimeWindow:
+        Mode: 'OFF'
+      Target:
+        Arn: !Ref GenerateStateFunctionArn
+        RoleArn: !Ref SchedulerRoleArn
+        Input: '{"state": "WA"}'
+
+  GenerateStateScheduleUT:
+    Type: AWS::Scheduler::Schedule
+    Properties:
+      Name: GenerateStateUT
+      Description: 'Schedule to trigger GenerateState function for Utah once per hour'
+      ScheduleExpression: 'cron(0 * * * ? *)'
+      ScheduleExpressionTimezone: 'America/Denver'
+      FlexibleTimeWindow:
+        Mode: 'OFF'
+      Target:
+        Arn: !Ref GenerateStateFunctionArn
+        RoleArn: !Ref SchedulerRoleArn
+        Input: '{"state": "UT"}'
+
+  GenerateStateScheduleCA:
+    Type: AWS::Scheduler::Schedule
+    Properties:
+      Name: GenerateStateCA
+      Description: 'Schedule to trigger GenerateState function for California once per hour'
+      ScheduleExpression: 'cron(0 * * * ? *)'
+      ScheduleExpressionTimezone: 'America/Los_Angeles'
+      FlexibleTimeWindow:
+        Mode: 'OFF'
+      Target:
+        Arn: !Ref GenerateStateFunctionArn
+        RoleArn: !Ref SchedulerRoleArn
+        Input: '{"state": "CA"}'
+
+  GenerateStateScheduleAK:
+    Type: AWS::Scheduler::Schedule
+    Properties:
+      Name: GenerateStateAK
+      Description: 'Schedule to trigger GenerateState function for Alaska once per hour'
+      ScheduleExpression: 'cron(0 * * * ? *)'
+      ScheduleExpressionTimezone: 'America/Anchorage'
+      FlexibleTimeWindow:
+        Mode: 'OFF'
+      Target:
+        Arn: !Ref GenerateStateFunctionArn
+        RoleArn: !Ref SchedulerRoleArn
+        Input: '{"state": "AK"}'
+
+  GenerateStateScheduleWY:
+    Type: AWS::Scheduler::Schedule
+    Properties:
+      Name: GenerateStateWY
+      Description: 'Schedule to trigger GenerateState function for Wyoming once per hour'
+      ScheduleExpression: 'cron(0 * * * ? *)'
+      ScheduleExpressionTimezone: 'America/Denver'
+      FlexibleTimeWindow:
+        Mode: 'OFF'
+      Target:
+        Arn: !Ref GenerateStateFunctionArn
+        RoleArn: !Ref SchedulerRoleArn
+        Input: '{"state": "WY"}'
+
+  GenerateStateScheduleMT:
+    Type: AWS::Scheduler::Schedule
+    Properties:
+      Name: GenerateStateMT
+      Description: 'Schedule to trigger GenerateState function for Montana once per hour'
+      ScheduleExpression: 'cron(0 * * * ? *)'
+      ScheduleExpressionTimezone: 'America/Denver'
+      FlexibleTimeWindow:
+        Mode: 'OFF'
+      Target:
+        Arn: !Ref GenerateStateFunctionArn
+        RoleArn: !Ref SchedulerRoleArn
+        Input: '{"state": "MT"}'
+
+  GenerateStateScheduleOR:
+    Type: AWS::Scheduler::Schedule
+    Properties:
+      Name: GenerateStateOR
+      Description: 'Schedule to trigger GenerateState function for Oregon once per hour'
+      ScheduleExpression: 'cron(0 * * * ? *)'
+      ScheduleExpressionTimezone: 'America/Los_Angeles'
+      FlexibleTimeWindow:
+        Mode: 'OFF'
+      Target:
+        Arn: !Ref GenerateStateFunctionArn
+        RoleArn: !Ref SchedulerRoleArn
+        Input: '{"state": "OR"}'
+
+  GenerateStateScheduleAZ:
+    Type: AWS::Scheduler::Schedule
+    Properties:
+      Name: GenerateStateAZ
+      Description: 'Schedule to trigger GenerateState function for Arizona once per hour'
+      ScheduleExpression: 'cron(0 * * * ? *)'
+      ScheduleExpressionTimezone: 'America/Phoenix'
+      FlexibleTimeWindow:
+        Mode: 'OFF'
+      Target:
+        Arn: !Ref GenerateStateFunctionArn
+        RoleArn: !Ref SchedulerRoleArn
+        Input: '{"state": "AZ"}'
+
+  GenerateStateScheduleNM:
+    Type: AWS::Scheduler::Schedule
+    Properties:
+      Name: GenerateStateNM
+      Description: 'Schedule to trigger GenerateState function for New Mexico once per hour'
+      ScheduleExpression: 'cron(0 * * * ? *)'
+      ScheduleExpressionTimezone: 'America/Denver'
+      FlexibleTimeWindow:
+        Mode: 'OFF'
+      Target:
+        Arn: !Ref GenerateStateFunctionArn
+        RoleArn: !Ref SchedulerRoleArn
+        Input: '{"state": "NM"}'
+
+  GenerateStateScheduleNV:
+    Type: AWS::Scheduler::Schedule
+    Properties:
+      Name: GenerateStateNV
+      Description: 'Schedule to trigger GenerateState function for Nevada once per hour'
+      ScheduleExpression: 'cron(0 * * * ? *)'
+      ScheduleExpressionTimezone: 'America/Los_Angeles'
+      FlexibleTimeWindow:
+        Mode: 'OFF'
+      Target:
+        Arn: !Ref GenerateStateFunctionArn
+        RoleArn: !Ref SchedulerRoleArn
+        Input: '{"state": "NV"}'
+
+  GenerateStateScheduleID:
+    Type: AWS::Scheduler::Schedule
+    Properties:
+      Name: GenerateStateID
+      Description: 'Schedule to trigger GenerateState function for Idaho once per hour'
+      ScheduleExpression: 'cron(0 * * * ? *)'
+      ScheduleExpressionTimezone: 'America/Boise'
+      FlexibleTimeWindow:
+        Mode: 'OFF'
+      Target:
+        Arn: !Ref GenerateStateFunctionArn
+        RoleArn: !Ref SchedulerRoleArn
+        Input: '{"state": "ID"}'
