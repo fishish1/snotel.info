@@ -1,1812 +1,362 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
+
+<head>
     <!-- Global site tag (gtag.js) - Google Analytics -->
-    <script
-      async
-      src="https://www.googletagmanager.com/gtag/js?id=UA-152809378-3"
-    ></script>
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-152809378-3"></script>
     <script async src="https://www.google-analytics.com/analytics.js"></script>
 
     <script>
-      window.dataLayer = window.dataLayer || [];
-      function gtag() {
-        dataLayer.push(arguments);
-      }
-      gtag("js", new Date());
+        window.dataLayer = window.dataLayer || [];
+        function gtag() {
+            dataLayer.push(arguments);
+        }
+        gtag("js", new Date());
 
-      gtag("config", "UA-152809378-3");
+        gtag("config", "UA-152809378-3");
 
-      window.ga =
-        window.ga ||
-        function() {
-          (ga.q = ga.q || []).push(arguments);
+        window.ga =
+            window.ga ||
+            function () {
+                (ga.q = ga.q || []).push(arguments);
+            };
+        ga.l = +new Date();
+        ga("create", "UA-152809378-3", "auto");
+        ga("send", "pageview");
+
+        var captureOutboundLink = function (url) {
+            ga("send", "event", "outbound", "click", url, {
+                transport: "beacon",
+                hitCallback: function () {
+                    document.location = url;
+                }
+            });
         };
-      ga.l = +new Date();
-      ga("create", "UA-152809378-3", "auto");
-      ga("send", "pageview");
 
-      var captureOutboundLink = function(url) {
-        ga("send", "event", "outbound", "click", url, {
-          transport: "beacon",
-          hitCallback: function() {
-            document.location = url;
-          }
-        });
-      };
-
-      var loc = window.location.href + "";
-      if (loc.indexOf("http://") == 0) {
-        window.location.href = loc.replace("http://", "https://");
-      }
+        var loc = window.location.href + "";
+        if (loc.indexOf("http://") == 0 &&
+            loc.indexOf("localhost") == -1 &&
+            loc.indexOf("127.0.0.1") == -1) {
+            window.location.href = loc.replace("http://", "https://");
+        }
     </script>
 
     <link rel="manifest" href="/manifest.json" />
     <link rel="canonical" href="https://snotel.info" />
-    <meta
-      name="google-site-verification"
-      content="2kGJFI1-GkmO1_Nzk1Wghiz3Eb2gLwlUQtxQl99VQbA"
-    />
+    <meta name="google-site-verification" content="2kGJFI1-GkmO1_Nzk1Wghiz3Eb2gLwlUQtxQl99VQbA" />
+    <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black" />
     <meta name="apple-mobile-web-app-title" content="Snow Quickie PWA" />
     <meta property="og:url" content="https://snotel.info" />
     <meta property="og:title" content="SnoTel Dashboard By Snow Intel" />
-    <meta
-      property="og:description"
-      content="An app to see SnoTel data, featuring Colorado."
-    />
+    <meta property="og:description" content="An app to see SnoTel data, featuring Colorado." />
     <meta property="og:type" content="website" />
-    <meta
-      property="og:image"
-      content="https://cdn.glitch.com/79a8371f-8b19-442a-8cef-9def4343f601%2Fshowoff.png?v=1586529016674"
-    />
-    <link
-      rel="apple-touch-icon"
-      href="https://cdn.glitch.com/79a8371f-8b19-442a-8cef-9def4343f601%2FSnow%20Intel%20Icon%20appl.png?v=1585871966505"
-    />
+    <meta property="og:image" content="/SnotelIcon512.png" />
+    <link rel="icon" type="image/png" href="/SnotelIcon512.png" />
+    <link rel="apple-touch-icon" href="/SnotelIcon512.png" />
 
     <title>SnoTel Dashboard</title>
-    <meta
-      name="description"
-      content="Easily view SnoTel data, including snow depth, snowfall, and more. This app is designed for backcountry enthusiasts in Colorado and beyond."
-    />
-    <meta
-      name="keywords"
-      content="NRCS, Snotel, SnoTel, backcountry, snow, snowfall, snow depth, CO, Colorado"
-    />
+    <meta name="description"
+        content="Easily view SnoTel data, including snow depth, snowfall, and more. This app is designed for backcountry enthusiasts in Colorado and beyond." />
+    <meta name="keywords" content="NRCS, Snotel, SnoTel, backcountry, snow, snowfall, snow depth, CO, Colorado" />
     <meta name="theme-color" content="#cccccc" />
 
-    <link
-      id="favicon"
-      rel="icon"
-      href="https://cdn.glitch.com/79a8371f-8b19-442a-8cef-9def4343f601%2Fgh.ico?v=1604349216498"
-      type="image/x-icon"
-    />
+    <link id="favicon" rel="icon" href="/SnotelIcon512.png" type="image/png" />
     <meta charset="utf-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="author" content="Brian Fishman" />
 
-    <link rel="stylesheet" href="/style.css" />
-    <link
-      rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"
-    />
-    <link
-      rel="stylesheet"
-      type="text/css"
-      href="//cdn.jsdelivr.net/npm/slick-carousel@1.8.1/slick/slick.css"
-    />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;800&display=swap" rel="stylesheet">
 
-    <!-- Remove KoolChart scripts and CSS -->
-    <!-- <script src="KoolChartLicense.js"></script>
-    <script src="https://www.koolchart.com/demo/KoolChart/JS/KoolChart.js"></script>
-    <link rel="stylesheet" href="https://www.koolchart.com/demo/KoolChart/Assets/Css/KoolChart.css"/> -->
+    <link rel="stylesheet" href="/style.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" />
+    <link rel="stylesheet" type="text/css" href="//cdn.jsdelivr.net/npm/slick-carousel@1.8.1/slick/slick.css" />
 
     <!-- Add Chart.js annotation plugin for wind direction arrows -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js@2.8.0"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.2.1/moment.min.js"></script>
 
-    <style>
-      [draggable=true] {
-        cursor: move;
-      }
-      /* Set the size of the div element that contains the map */
-      #map {
-        height: 80%; /* The height is 400 pixels */
-        width: 100%; /* The width is the width of the web page */
-        left: -0vh;
-        top: 7.5%;
-      }
-      #legend_title {
-        margin-top: 5px;
-        margin-bottom: 5px;
-      }
+</head>
 
-      #legenddiv {
-        right: 10px;
-        top: 20vh;
-        width: 40px;
-        z-index: 10;
-        position: fixed;
-        background-color: white;
-        font-size: 10px;
-        text-align: center;
-       border-radius: 2px;
-        margin-bottom: 10px;
-      }
-
-      /* your colors */
-      .legend .grow {
-        height: 10px;
-        margin-left: 5%;
-        width: 90%;
-        display: inline-flex;
-      }
-      .legend .trow {
-        height: 10px;
-        width: 40%;
-        margin: 1px;
-      }
-      #L5 {
-        background-color: #FFFFFF;
-      }
-      #L4 {
-        background-color: #E5E5E5;
-      }
-      #L3 {
-        background-color: #CBCBCB;
-      }
-      #L2 {
-        background-color: #CB9898;
-      }
-      #L1 {
-        background-color: #E54C4C;
-      }
-      #L0 {
-        background-color: #FF0000;
-      }
-
-      .alert {
-        top: 10%;
-        left: 30%;
-        width: 40%;
-        height: 10%;
-        padding-top: 2.5%;
-      }
-      #Data_Title {
-        position: fixed;
-        display: inline-block;
-        width: 50%;
-        height: 5%;
-        top: 85%;
-        left: 40%;
-        z-index: 3;
-        font-size: 16px;
-        color: white;
-        text-align: center;
-        font-family: sans-serif;
-        font-weight: 400;
-      }
-      #State_Title {
-        position: fixed;
-        display: block;
-        width: 20%;
-        height: 5%;
-        top: 85%;
-        left: 10%;
-        z-index: 3;
-        font-size: 16px;
-        color: white;
-        text-align: center;
-        font-family: sans-serif;
-        font-weight: 400;
-      }
-      #State_Div {
-        position: absolute;
-        top: 30%;
-        left: 7.5%;
-        height: 100%;
-        width: 25%;
-      }
-      #overlay2 {
-        position: fixed;
-        display: block;
-        width: 100%;
-        height: 7.5%;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background-color: rgba(0, 0, 0, 1);
-        z-index: 3;
-        cursor: pointer;
-      }
-      #install_button {
-        position: fixed;
-        display: none;
-        width: 100%;
-        top: 2.5%;
-        left: 80%;
-      }
-      #overlay3 {
-        position: fixed;
-        text-align: center;
-        display: none;
-        width: 100%;
-        height: 92.5%;
-        top: 7.5%;
-        left: 0;
-        background-color: rgba(0, 0, 0, 1);
-        z-index: 1500;
-        cursor: pointer;
-      }
-      #overlay3_v {
-        position: fixed;
-        text-align: center;
-        display: block;
-        width: 100%;
-        height: 70%;
-        top: 15%;
-        left: 0;
-        background-color: rgba(0, 0, 0, 0);
-        z-index: 1501;
-        cursor: pointer;
-      }
-      #overlay3_vv {
-        position: fixed;
-        text-align: center;
-        display: none;
-        width: 100%;
-        height: 100%;
-        top: 75%;
-        left: 0;
-        background-color: rgba(0, 0, 0, 0);
-        z-index: 1500;
-        cursor: pointer;
-      }
-
-      #overlay {
-        position: fixed;
-        display: block;
-        width: 100%;
-        height: 15%;
-        top: 85%;
-        left: 0;
-        background-color: rgba(0, 0, 0, 1);
-        z-index: 1;
-        cursor: pointer;
-      }
-
-      h1 {
-        position: absolute;
-        padding: 0px;
-        margin: 0px;
-        top: 50%;
-        left: 50%;
-        font-size: 20px;
-        color: white;
-        transform: translate(-50%, -50%);
-        -ms-transform: translate(-50%, -50%);
-      }
-      h2 {
-        position: absolute;
-        top: 70%;
-        left: 50%;
-        font-size: 10px;
-        color: grey;
-        transform: translate(-50%, -50%);
-        -ms-transform: translate(-50%, -50%);
-      }
-
-      /* Tablet or Long Phone Portrait */
-
-      @media only screen and (min-device-height: 700px) and (max-device-height: 900px) and (orientation: portrait) {
-        #overlay3_vv {
-          display: block;
-        }
-        #map {
-          top: 7.5%;
-          height: 80%; /* The height is 400 pixels */
-          width: 100%; /* The width is the width of the web page */
-        }
-        .alert {
-          padding-top: 1%;
-          top: 8%;
-          left: 2.5%;
-          width: 95%;
-          height: 5%;
-        }
-      }
-
-      @media only screen and (min-device-height: 900px) and (max-device-height: 2000px) and (orientation: portrait) {
-        #map {
-          top: 7.5%;
-          height: 80%; /* The height is 400 pixels */
-          width: 100%; /* The width is the width of the web page */
-        }
-        .alert {
-          top: 8%;
-          left: 25%;
-          width: 50%;
-          height: 5%;
-        }
-      }
-
-      /* Tablet Landscape */
-      /* iPhone X */
-
-      @media only screen and (min-device-width: 600px) and (max-device-width: 1000px) and (max-device-height: 500px) and (orientation: landscape) {
-        #overlay3_vv {
-          display: none;
-        }
-        h2 {
-          display: none;
-        }
-        #map {
-          top: 7.5%;
-          height: 80%; /* The height is 400 pixels */
-          width: 100%; /* The width is the width of the web page */
-        }
-        .alert {
-          padding-top: 0%;
-          top: 8%;
-          left: 20%;
-          width: 60%;
-          height: 5%;
-        }
-      }
-      /* Long Phone Landscape */
-
-      @media only screen and (min-device-width: 600px) and (max-device-width: 1000px) and (orientation: landscape) {
-        #overlay2 {
-          width: 100%;
-          height: 5%;
-          top: 0%;
-        }
-        #overlay3_vv {
-          display: none;
-        }
-        h1 {
-          position: absolute;
-          top: 50%;
-          font-size: 20px;
-        }
-        #map {
-          top: 7.5%;
-          height: 80%; /* The height is 400 pixels */
-          width: 100%; /* The width is the width of the web page */
-        }
-        .alert {
-          padding-top: 0%;
-          top: 8%;
-          left: 25%;
-          width: 50%;
-          height: 5%;
-        }
-      }
-
-      @media only screen and (min-device-width: 1000px) and (max-device-width: 2000px) and (max-device-height: 800px) and (orientation: landscape) {
-        #overlay2 {
-          width: 100%;
-          height: 10%;
-        }
-
-        #overlay {
-          width: 100%;
-          height: 25%;
-          top: 75%;
-          left: 0;
-        }
-        #map {
-          top: 7.5%;
-          left: 0vw;
-          height: 75%; /* The height is 400 pixels */
-          width: 100%; /* The width is the width of the web page */
-        }
-        .alert {
-          top: 12%;
-          left: 30%;
-          width: 40%;
-          height: 5%;
-          padding-top: 0.25%;
-        }
-        #overlay {
-          height: 20%;
-          top: 80%;
-        }
-        #Data_Title {
-          width: 50%;
-          height: 5%;
-          top: 80%;
-          left: 40%;
-        }
-
-        #State_Title {
-          width: 20%;
-          height: 5%;
-          top: 80%;
-          left: 10%;
-        }
-      }
-      @media only screen and (min-device-width: 1000px) and (min-device-height: 800px) and (orientation: landscape) {
-        h1 {
-          font-size: 36px;
-        }
-        h2 {
-          top: 60%;
-        }
-
-        #map {
-          height: 80%; /* The height is 400 pixels */
-          width: 100%; /* The width is the width of the web page */
-          top: 7.5%;
-          left: 0vh;
-        }
-      }
-
-      /*Small Phone Style*/
-      @media only screen and (min-device-height: 320px) and (max-device-height: 700px) and (orientation: portrait) {
-        .alert {
-          padding-top: 2.5%;
-          padding-left: 0px;
-          top: 9%;
-          left: 2.5%;
-          width: 95%;
-          height: 5%;
-        }
-        #overlay3_vv {
-          display: block;
-        }
-        #overlay {
-          width: 100%;
-          height: 20%;
-          top: 80%;
-        }
-        h2 {
-          display: none;
-        }
-        #map {
-          top: 7.5%;
-          height: 76%; /* The height is 400 pixels */
-          width: 100%; /* The width is the width of the web page */
-        }
-        #Data_Title {
-          width: 50%;
-          height: 5%;
-          top: 81%;
-          left: 40%;
-        }
-        #State_Title {
-          width: 20%;
-          height: 5%;
-          top: 81%;
-          left: 7.5%;
-        }
-        #State_Div {
-          top: 25%;
-          left: 2.5%;
-          height: 100%;
-          width: 30%;
-        }
-      }
-
-      @media only screen and (min-device-width: 320px) and (max-device-width: 1000px) and (orientation: landscape) {
-        #overlay3_vv {
-          display: none;
-        }
-        #overlay2 {
-          width: 100%;
-          height: 10%;
-        }
-        .alert {
-          padding-top: 0.5%;
-          top: 12%;
-          left: 15%;
-          width: 70%;
-          height: 7.5%;
-        }
-        #overlay {
-          width: 100%;
-          height: 25%;
-          top: 75%;
-          left: 0;
-        }
-        #map {
-          top: 7.5%;
-          height: 70%; /* The height is 400 pixels */
-          width: 100%; /* The width is the width of the web page */
-        }
-        #Data_Title {
-          width: 50%;
-          height: 5%;
-          top: 75%;
-          left: 40%;
-        }
-
-        #State_Title {
-          width: 20%;
-          height: 5%;
-          top: 75%;
-          left: 10%;
-        }
-      }
-
-      #Today,
-      #OneDay,
-      #FiveDay,
-      #Elevation,
-      #Avg {
-        padding: 10px 0px 10px 0px;
-        background-color: rgba(0, 0, 0, 0.5);
-        font-size: 20px;
-        color: white;
-        text-align: center;
-        display: block;
-        font-family: sans-serif;
-        font-weight: 700;
-        line-height: 1.3;
-        box-sizing: border-box;
-        margin: 0;
-        border-radius: 0.5em;
-      }
-
-      #butInstall {
-        position: fixed;
-        display: block;
-        width: 25%;
-        height: 5%;
-        top: 1.25%;
-        left: 70%;
-        z-index: 3000;
-        font-size: 16px;
-        color: white;
-        text-align: center;
-        display: block;
-        font-family: sans-serif;
-        font-weight: 400;
-        background-color: rgba(0, 0, 0, 0.85);
-      }
-
-      #overlay_text {
-      }
-
-      #car {
-        position: absolute;
-        top: 50%;
-        left: 65%;
-        transform: translate(-50%, -50%);
-        width: 50%;
-      }
-
-      #State_Selecter {
-        background-color: rgba(0, 0, 0, 0.5);
-        margin: 0 auto;
-        height: 50px;
-        width: 100%;
-        font-size: 20px;
-        color: white;
-        text-align: center;
-        display: block;
-        font-family: sans-serif;
-        font-weight: 700;
-        line-height: 1.3;
-        padding: 0.6em 1.4em 0.5em 0.8em;
-        max-width: 100px;
-        box-sizing: border-box;
-        border: 1px solid #aaa;
-        box-shadow: 0 1px 0 1px rgba(0, 0, 0, 0.04);
-        border-radius: 0.5em;
-      }
-      #State_Selecter:after {
-        position: absolute;
-        content: "";
-        top: 14px;
-        right: 10px;
-        width: 0;
-        height: 0;
-        border: 6px solid transparent;
-        border-color: #fff transparent transparent transparent;
-      }
-
-      .slick-prev, .slick-next {
-        font-size: 0;
-        line-height: 0;
-        position: absolute;
-        top: 50%;
-        transform: translateY(-50%);
-        z-index: 1;
-        background: transparent;
-        border: transparent;
-      }
-      .slick-prev {
-        left: -25px;
-      }
-      .slick-next {
-        right: -25px;
-      }
-
-      .slick-prev:before,
-      .slick-next:before {
-        font-family: 'FontAwesome';
-        font-size: 30px;
-        color: white;
-        opacity: 0.85;
-      }
-      .slick-prev:before {
-        content: '\f0a8'; /* fa-arrow-circle-left */
-      }
-      .slick-next:before {
-        content: '\f0a9'; /* fa-arrow-circle-right */
-      }
-
-      .alert {
-        position: fixed;
-        text-align: center;
-        display: none;
-        background-color: rgba(0, 0, 0, 0);
-        z-index: 1503;
-        cursor: pointer;
-        color: #fff;
-        background: #1c1c1c;
-        border-color: #000;
-      }
-      .alert-info {
-        acolor: #31708f;
-        background-color: #d9edf7;
-        border-color: #bce8f1;
-      }
-      .alert {
-        border: 1px solid transparent;
-        border-radius: 4px;
-      }
-      .alert-dismissable .close,
-      .alert-dismissible .close {
-        right: 12px;
-      }
-      .alert-dismissable .close,
-      .alert-dismissible .close {
-        position: relative;
-        top: -2px;
-        right: -21px;
-        color: inherit;
-      }
-      button.close {
-        -webkit-appearance: none;
-        padding: 0;
-        cursor: pointer;
-        background: 0 0;
-        border: 0;
-      }
-      .close {
-        float: right;
-        font-size: 21px;
-        font-weight: 700;
-        line-height: 1;
-        color: #000;
-        text-shadow: 0 1px 0 #fff;
-        filter: alpha(opacity=20);
-        opacity: 0.2;
-        margin-right: 20px;
-      }
-      .alert p {
-        font-size: 16px;
-      }
-
-      .alert a {
-        color: #ffffff;
-        font-size: 14px;
-      }
-      .alert {
-        text-align: center;
-        color: #fff;
-        background: #B02D28;
-        border-color: #000;
-        font-family: clarendon;
-      }
-      #bg_banner_click {
-        width: 100%;
-        height: 100%;
-        position: relative;
-      }
-    </style>
-
-    <script>
-      //Initiate at 0, 1 for shown, 2 for cancelled: 2 to not show ever
-      var BannerShown = 0;
-      var Option = 0;
-      var Selected_Site = "874:CO:SNTL";
-      var Selected_Site_Link;
-      var Selected_SiteName;
-      var Selected_SiteID;
-      var Selected_Site_Triplet;
-      var Selected_Site_HasWind;
-      var map;
-      var state_selected = "CO";
-      var DisplayString;
-      var o3 = "off";
-      var Selected_Elevation = 0;
-      var states = [
-        "CO",
-        "WA",
-        "UT",
-        "CA",
-        "AK",
-        "WY",
-        "MT",
-        "OR",
-        "AZ",
-        "NM",
-        "NV",
-        "ID"
-      ];
-
-      function degToCompass(num) {
-        var val = Math.floor((num / 22.5) + 0.5);
-        var arr = ["N", "NNE", "NE", "ENE", "E", "ESE", "SE", "SSE", "S", "SSW", "SW", "WSW", "W", "WNW", "NW", "NNW"];
-        return arr[(val % 16)];
-      }
-
-      //var allCookies = document.cookie;
-      function getCookie(name) {
-        let cookie = {};
-        document.cookie.split(";").forEach(function(el) {
-          let [k, v] = el.split("=");
-          cookie[k.trim()] = v;
-        });
-        return cookie[name];
-      }
-
-      function set_state_cookie(state) {
-        document.cookie = "state=" + state;
-        return;
-      }
-
-      function changeState() {
-        state_selected = document.getElementById("State_Selecter").value;
-        get_new_map(state_selected, Option);
-        try {
-          set_state_cookie(state_selected);
-          ga("send", "event", "Change State", state_selected, "Cookie Set");
-        } catch (error) {
-          console.log("Unable to Set Cookie for State Selected", error);
-        }
-      }
-
-      function changeData(Option) {
-        change_map_data(Option);
-        get_map_legend(Option);
-      }
-
-      function overlay_on() {
-        document.getElementById("overlay").style.display = "block";
-        document.getElementById("overlay2").style.display = "block";
-      }
-      function overlay_off() {
-        document.getElementById("overlay").style.display = "none";
-        document.getElementById("overlay2").style.display = "none";
-      }
-      function overlay_3_toggle() {
-        if (o3 == "on") {
-          ga("send", "event", "PWA", "Show Install Info", "Probably iOS");
-          document.getElementById("overlay3").style.display = "none";
-          o3 = "off";
-          return;
-        }
-        if (o3 == "off") {
-          document.getElementById("overlay3").style.display = "block";
-          o3 = "on";
-          return;
-        }
-      }
-      
-
-      function addListeners(){
-    document.getElementById('legenddiv').addEventListener('mousedown', mouseDown, true);
-    document.getElementById('legenddiv').addEventListener('touchmove', mouseDown, true);
-    window.addEventListener('mouseup', mouseUp, true);
-    document.getElementById('legenddiv').addEventListener('touchend', mouseUp, true);
-
-}
-
-function mouseUp()
-{
-    window.removeEventListener('mousemove', divMove, true);
-    document.getElementById('legenddiv').removeEventListener('touchmove', divMove, true);
-
-}
-
-function mouseDown(e){
-  e.preventDefault();
-  window.addEventListener('mousemove', divMove, true);
-  document.getElementById('legenddiv').addEventListener('touchmove', divMove, true);
-}
-
-function divMove(e){
-    var div = document.getElementById('legenddiv');
- var pageX = (e.type.toLowerCase() === 'mousemove')
-                    ? e.clientX
-                    : e.touches[0].pageX;
-  
-   var pageY = (e.type.toLowerCase() === 'mousemove')
-                    ? e.clientY
-                    : e.touches[0].pageY;
-  
-  pageX = pageX - 20;
-  pageY = pageY - 75;
-  
-  div.style.position = 'absolute';
-  div.style.top =  pageY + 'px';
-  div.style.left = pageX + 'px';
-}
-
-      function iOS() {
-        return [
-          'iPad Simulator',
-          'iPhone Simulator',
-          'iPod Simulator',
-          'iPad',
-          'iPhone',
-          'iPod'
-        ].includes(navigator.platform)
-        // For iOS 13+
-        || (navigator.userAgent.includes("Mac") && "ontouchend" in document)
-      }
-    
-      let myChart;
-
-      async function fetchWeather(URL) {
-        var jsona;
-        const response = await fetch(URL);
-        try {
-          jsona = await response.json();
-        } catch (err) {
-          return err;
-        }
-
-        return response.ok ? jsona : Promise.reject(jsona);
-      }
-
-      const setData = async Selected_Site => {
-        const loadingIndicator = document.getElementById("loading-indicator");
-        const snowChartCanvas = document.getElementById("snowChart");
-        const noDataWarning = document.getElementById("no-data-warning");
-
-        loadingIndicator.style.display = "block";
-        snowChartCanvas.style.visibility = "hidden";
-        noDataWarning.style.display = "none";
-
-        try {
-          console.log(Selected_SiteName, Selected_Site);
-          DisplayString =
-            Selected_SiteName + " - " + parseInt(Selected_Elevation) + "ft";
-
-          const ctx = document.getElementById("snowChart");
-
-          if (myChart) myChart.destroy();
-
-          const urls = {
-            snowDepth: "https://api.snotel.info/hourly/" + Selected_Site + "/SNWD",
-            airTemp: "https://api.snotel.info/hourly/" + Selected_Site + "/TOBS"
-          };
-
-          if (Selected_Site_HasWind === "Yes") {
-            urls.windSpeed = "https://api.snotel.info/hourly/" + Selected_Site + "/WSPDV";
-            urls.windGust = "https://api.snotel.info/hourly/" + Selected_Site + "/WSPDX";
-            urls.windDir = "https://api.snotel.info/hourly/" + Selected_Site + "/WDIRV";
-          }
-
-          const [rawSNWD, rawTOBS, rawWindSpeed, rawGustSpeed, rawWindDirection] = await Promise.all([
-            fetchWeather(urls.snowDepth),
-            fetchWeather(urls.airTemp),
-            urls.windSpeed ? fetchWeather(urls.windSpeed) : Promise.resolve(null),
-            urls.windGust ? fetchWeather(urls.windGust) : Promise.resolve(null),
-            urls.windDir ? fetchWeather(urls.windDir) : Promise.resolve(null)
-          ]);
-
-          if (!rawSNWD || Object.keys(rawSNWD).length === 0) {
-            noDataWarning.style.display = "block";
-            return;
-          }
-
-          const timestamps = [];
-          const SnowDepthData = [];
-          const AirTempData = [];
-          const AirTempColor = [];
-          const WindSpeedData = [];
-          const WindGustData = [];
-          const WindDirData = [];
-
-          if (rawSNWD) {
-            for (let i = 0; i < rawSNWD.length; i++) {
-              const record = rawSNWD[i];
-              timestamps.push(record.dateTime);
-
-              if (record.value >= 0) {
-                SnowDepthData.push(parseInt(record.value));
-              } else if (record.value >= -10) {
-                SnowDepthData.push(0);
-              } else {
-                SnowDepthData.push(undefined);
-              }
-            }
-          }
-
-          const dataMap = {};
-          if (rawTOBS && Object.keys(rawTOBS).length > 0) {
-            rawTOBS.forEach(d => (dataMap[d.dateTime] = { ...dataMap[d.dateTime], temp: parseInt(d.value) }));
-          }
-          if (rawWindSpeed && Object.keys(rawWindSpeed).length > 0) {
-            rawWindSpeed.forEach(d => (dataMap[d.dateTime] = { ...dataMap[d.dateTime], windSpeed: parseInt(d.value) }));
-          }
-          if (rawGustSpeed && Object.keys(rawGustSpeed).length > 0) {
-            rawGustSpeed.forEach(d => (dataMap[d.dateTime] = { ...dataMap[d.dateTime], windGust: parseInt(d.value) }));
-          }
-          if (rawWindDirection && Object.keys(rawWindDirection).length > 0) {
-            rawWindDirection.forEach(d => (dataMap[d.dateTime] = { ...dataMap[d.dateTime], windDir: parseInt(d.value) }));
-          }
-
-          timestamps.forEach(ts => {
-            const data = dataMap[ts] || {};
-            AirTempData.push(data.temp);
-            WindSpeedData.push(data.windSpeed);
-            WindGustData.push(data.windGust);
-            WindDirData.push(data.windDir);
-
-            if (data.temp !== undefined) {
-              let color, percent_light, hsl_string;
-              if (data.temp > 30) {
-                color = 0;
-                percent_light = Math.max(10, Math.min(100, 162 - data.temp * 2));
-              } else {
-                color = 237;
-                percent_light = Math.max(10, Math.min(100, 3 * data.temp + 10));
-              }
-              hsl_string = `hsl(${color}, 100%, ${percent_light}%)`;
-              AirTempColor.push(hsl_string);
-            } else {
-              AirTempColor.push(undefined);
-            }
-          });
-
-          var year = new Date().getFullYear();
-          var chartLabels = timestamps.map(t => moment(t, "YYYY-MM-DD HH:mm").toDate());
-
-          const datasets = [
-            {
-              label: "Snow Depth (in)",
-              data: SnowDepthData,
-              backgroundColor: "rgba(200, 200, 200, 1)",
-              borderColor: "rgba(200, 200, 200, 1)",
-              fill: false,
-              pointBackgroundColor: context => AirTempColor[context.dataIndex],
-              yAxisID: "y-axis-snow"
-            }
-          ];
-
-          if (Selected_Site_HasWind === "Yes" && rawWindSpeed && Object.keys(rawWindSpeed).length > 0) {
-            datasets.push({
-              label: "Avg Wind (mph)",
-              data: WindSpeedData,
-              borderColor: "#5587a2",
-              backgroundColor: "rgba(85,135,162,0.1)",
-              fill: false,
-              pointRadius: 0,
-              yAxisID: "y-axis-wind"
-            });
-          }
-
-          if (Selected_Site_HasWind === "Yes" && rawGustSpeed && Object.keys(rawGustSpeed).length > 0) {
-            datasets.push({
-              label: "Max Wind (mph)",
-              data: WindGustData,
-              borderColor: "#690000",
-              backgroundColor: "rgba(105,0,0,0.1)",
-              fill: false,
-              pointRadius: 0,
-              yAxisID: "y-axis-wind"
-            });
-          }
-
-          const windDirPlugin = {
-            afterDatasetsDraw: function(chart) {
-              if (Selected_Site_HasWind !== "Yes" || !rawWindDirection || Object.keys(rawWindDirection).length === 0) return;
-              const ctx = chart.ctx;
-              const windDatasetMeta = chart.getDatasetMeta(1); // Avg Wind dataset
-              ctx.save();
-              windDatasetMeta.data.forEach((point, i) => {
-                if (!point || !WindDirData[i] || isNaN(WindDirData[i])) return;
-                const angle = (WindDirData[i] + 270) * Math.PI / 180;
-                const x = point._model.x;
-                const y = point._model.y;
-                const len = 15;
-                ctx.save();
-                ctx.translate(x, y);
-                ctx.rotate(angle);
-                ctx.beginPath();
-                ctx.moveTo(0, 0);
-                ctx.lineTo(len, 0);
-                ctx.lineTo(len - 4, -3);
-                ctx.moveTo(len, 0);
-                ctx.lineTo(len - 4, 3);
-                ctx.strokeStyle = "#888";
-                ctx.lineWidth = 1;
-                ctx.stroke();
-                ctx.restore();
-              });
-              ctx.restore();
-            }
-          };
-
-          const yAxes = [
-            {
-              id: "y-axis-snow",
-              position: "left",
-              scaleLabel: { display: true, labelString: "Snow Depth (inches)" },
-              ticks: { min: 0, suggestedMax: 100, beginAtZero: true },
-              gridLines: { color: "rgba(200, 200, 200, 0.5)" }
-            }
-          ];
-
-          if (Selected_Site_HasWind === "Yes" && (rawWindSpeed || rawGustSpeed)) {
-            yAxes.push({
-              id: "y-axis-wind",
-              position: "right",
-              scaleLabel: { display: true, labelString: "Wind Speed (mph)" },
-              ticks: { min: 0, suggestedMax: 20 },
-              gridLines: { drawOnChartArea: false }
-            });
-          }
-
-          const chartTitleText = Selected_Site_HasWind === "Yes"
-            ? [DisplayString, "Snow Depth, Temp, & Wind"]
-            : [DisplayString, "Snow Depth & Temp"];
-
-          myChart = new Chart(ctx, {
-            type: "line",
-            data: { labels: chartLabels, datasets: datasets },
-            options: {
-              responsive: true,
-              maintainAspectRatio: false,
-              title: {
-                display: true,
-                text: chartTitleText,
-                fontSize: 20
-              },
-              tooltips: {
-                mode: 'index',
-                intersect: false,
-                callbacks: {
-                  label: function(tooltipItem, data) {
-                    const datasetLabel = data.datasets[tooltipItem.datasetIndex].label || '';
-                    if (tooltipItem.datasetIndex === 0) { // Snow Depth
-                      return `Snow Depth: ${tooltipItem.yLabel}"`;
-                    }
-                    return `${datasetLabel}: ${tooltipItem.yLabel} mph`;
-                  },
-                  afterLabel: function(tooltipItem, data) {
-                    if (tooltipItem.datasetIndex === 0) { // Only show for snow depth point
-                      const temp = AirTempData[tooltipItem.index];
-                      if (temp !== undefined) return `Air Temp: ${temp}°F`;
-                    }
-                  },
-                  footer: function(tooltipItems, data) {
-                    if (Selected_Site_HasWind !== "Yes" || !rawWindDirection || Object.keys(rawWindDirection).length === 0) return;
-                    const idx = tooltipItems[0].index;
-                    const dir = WindDirData[idx];
-                    if (dir !== undefined) {
-                      return `Wind Dir: ${degToCompass(dir)}`;
-                    }
-                  }
-                }
-              },
-              scales: {
-                xAxes: [{
-                  type: "time",
-                  time: { tooltipFormat: "MM-DD HH:mm", unit: "day" },
-                  gridLines: { color: "rgba(200, 200, 200, 0.5)" }
-                }],
-                yAxes: yAxes
-              }
-            },
-            plugins: [windDirPlugin]
-          });
-
-        } finally {
-          loadingIndicator.style.display = "none";
-          snowChartCanvas.style.visibility = "visible";
-        }
-      };
-
-      change_map_data = function(Option) {
-        if (Option == 0) {
-          Color = "TodayColor";
-          Time = "Today";
-        }
-        if (Option == 1) {
-          Color = "OneDayColor";
-          Time = "OneDayChange";
-        }
-        if (Option == 5) {
-          Color = "FiveDayColor";
-          Time = "FiveDayChange";
-        }
-        if (Option == 4) {
-          Color = "elevationColor";
-          Time = "elevation";
-        }
-         if (Option == 6) {
-          Color = "avgColor";
-          Time = "Avg";
-        }
-
-        map.data.setStyle(function(feature) {
-          var color = "#" + feature.getProperty(Color);
-          if (Time == "elevation") {
-            var labeler = parseInt(feature.getProperty(Time) / 100) / 10;
-          } else if (Time == "Avg"){
-            var labeler = parseInt(feature.getProperty(Time)) + '%';
-          } else{
-            var labeler = feature.getProperty(Time) + '"';
-          }
-          return {
-            label: labeler,
-            icon: {
-              path: google.maps.SymbolPath.CIRCLE,
-              scale: 15,
-              fillColor: color,
-              fillOpacity: 1,
-              strokeWeight: 1,
-              strokeColor: color
-            }
-          };
-        });
-      };
-      
-      get_map_legend = function(Option) {
-        var leg_tit = document.getElementById("legend_title");
-            var L5 = document.getElementById("L5");
-                var L4 = document.getElementById("L4");
-              var L3 = document.getElementById("L3");
-                var L2 = document.getElementById("L2");
-              var L1 = document.getElementById("L1");
-                var L0 = document.getElementById("L0");
-         
-            var T5 = document.getElementById("T5");
-            var T4 = document.getElementById("T4");
-            var T3 = document.getElementById("T3");
-            var T2 = document.getElementById("T2");
-            var T1 = document.getElementById("T1");
-            var T0 = document.getElementById("T0");
-        
-          if (Option == 0) {
-         // Color = "TodayColor";
-         // Time = "Today";
-            
-               T5.innerHTML = '100"';
-               T4.innerHTML = '80"';
-               T3.innerHTML = '60"';
-               T2.innerHTML = '40"';
-               T1.innerHTML = '20"';
-               T0.innerHTML = '0"';
-            leg_tit.innerHTML = 'Current Depth';
-            
-        }
-        if (Option == 1) {
-             T5.innerHTML = '+9"';
-               T4.innerHTML = '+6"';
-               T3.innerHTML = '+3"';
-               T2.innerHTML = '-3"';
-               T1.innerHTML = '-6"';
-               T0.innerHTML = '-9"';
-              leg_tit.innerHTML = '1 Day Depth';
-
-        }
-        if (Option == 5) {
-             T5.innerHTML = '+18"';
-               T4.innerHTML = '+12"';
-               T3.innerHTML = '+6"';
-               T2.innerHTML = '-6"';
-               T1.innerHTML = '-12"';
-               T0.innerHTML = '-18"';
-              leg_tit.innerHTML = '5 Day Depth';
-
-        }
-         if (Option == 4) {
-         // Color = "TodayColor";
-         // Time = "Today";
-            
-               T5.innerHTML = '11k"';
-               T4.innerHTML = '10k"';
-               T3.innerHTML = '9k"';
-               T2.innerHTML = '8k"';
-               T1.innerHTML = '7k"';
-               T0.innerHTML = '6k"';
-            leg_tit.innerHTML = 'SnoTel Elevation'; //"#228B22" "#4EA24E" "#7AB97A" "#A6D0A6" "#D2E7D2" "#FFFFFF"
-            
-           L0.style.backgroundColor = "#228B22"; 
-               L1.style.backgroundColor = "#4EA24E";
-         L2.style.backgroundColor = "#7AB97A";
-         L3.style.backgroundColor = "#A6D0A6";
-         L4.style.backgroundColor = "#D2E7D2";
-         L5.style.backgroundColor = "#FFFFFF" ;//"#FF0000" "#E54C4C" "#CB9898" "#CBCBCB" "#E5E5E5" "#FFFFFF"
-        }
-            if (Option == 6) {
-         // Color = "TodayColor";
-         // Time = "Today";
-            
-               T5.innerHTML = '150%';
-               T4.innerHTML = '120%';
-               T3.innerHTML = '90%';
-               T2.innerHTML = '60%';
-               T1.innerHTML = '30%';
-               T0.innerHTML = '0%';
-            leg_tit.innerHTML = '% Avg SWE';
-            
-        }
-         
-                 if (Option != 4) {
-               L0.style.backgroundColor = "#FF0000"; 
-               L1.style.backgroundColor = "#E54C4C";
-         L2.style.backgroundColor = "#CB9898";
-         L3.style.backgroundColor = "#CBCBCB";
-         L4.style.backgroundColor = "#E5E5E5";
-         L5.style.backgroundColor = "#FFFFFF" ;//"#FF0000" "#E54C4C" "#CB9898" "#CBCBCB" "#E5E5E5" "#FFFFFF"
-                 }
-        
-      }
-      
-       get_chart_legend = function() {
-                 var leg_tit = document.getElementById("legend_title");
-                  var L5 = document.getElementById("L5");
-                var L4 = document.getElementById("L4");
-              var L3 = document.getElementById("L3");
-                var L2 = document.getElementById("L2");
-              var L1 = document.getElementById("L1");
-                var L0 = document.getElementById("L0");
-         
-            var T5 = document.getElementById("T5");
-            var T4 = document.getElementById("T4");
-            var T3 = document.getElementById("T3");
-            var T2 = document.getElementById("T2");
-            var T1 = document.getElementById("T1");
-            var T0 = document.getElementById("T0");
-         
-                     leg_tit.innerHTML = 'Air Temp';
-
-         
-               T5.innerHTML = "40F";
-               T4.innerHTML = "32F";
-               T3.innerHTML = "24F";
-               T2.innerHTML = "16F";
-               T1.innerHTML = "8F";
-               T0.innerHTML = "0F";
-         
-               L5.style.backgroundColor = "red";
-               L4.style.backgroundColor = "#FFFFFF";
-         L3.style.backgroundColor = "#6666CC";
-         L2.style.backgroundColor = "#0000BB";
-         L1.style.backgroundColor = "#000066";
-         L0.style.backgroundColor = "#000000";
-      }
-      
-
-      get_new_map = function(State_Selected, Option) {
-        console.log(State_Selected);
-        console.log(Option);
-        var map_focus;
-        var zoom;
-
-        if (Option == 0) {
-          Color = "TodayColor";
-          Time = "Today";
-        }
-        if (Option == 1) {
-          Color = "OneDayColor";
-          Time = "OneDayChange";
-        }
-        if (Option == 5) {
-          Color = "FiveDayColor";
-          Time = "FiveDayChange";
-        }
-         if (Option == 6) {
-          Color = "avgColor";
-          Time = "Avg";
-        }
-
-        if (State_Selected == "UT") {
-          map_focus = { lat: 40.344, lng: -112.036 };
-          zoom = 7;
-        }
-        if (State_Selected == "AK") {
-          map_focus = { lat: 62.344, lng: -145.036 };
-          zoom = 5;
-        }
-        if (State_Selected == "AZ") {
-          map_focus = { lat: 35.044, lng: -111.536 };
-          zoom = 7;
-        }
-        if (State_Selected == "CA") {
-          map_focus = { lat: 40.144, lng: -120.036 };
-          zoom = 7;
-        }
-        if (State_Selected == "CO") {
-          map_focus = { lat: 39.344, lng: -106.236 };
-          zoom = 7;
-        }
-        if (State_Selected == "WA") {
-          map_focus = { lat: 47.544, lng: -121.886 };
-          zoom = 7;
-        }
-        if (State_Selected == "OR") {
-          map_focus = { lat: 44.144, lng: -119.036 };
-          zoom = 7;
-        }
-        if (State_Selected == "MT") {
-          map_focus = { lat: 47.144, lng: -110.036 };
-          zoom = 6;
-        }
-
-        if (State_Selected == "NV") {
-          map_focus = { lat: 39.144, lng: -115.036 };
-          zoom = 6;
-        }
-        if (State_Selected == "NM") {
-          map_focus = { lat: 35.244, lng: -104.886 };
-          zoom = 7;
-        }
-        if (State_Selected == "ID") {
-          map_focus = { lat: 46.144, lng: -112.036 };
-          zoom = 6;
-        }
-        if (State_Selected == "WY") {
-          map_focus = { lat: 43.544, lng: -107.886 };
-          zoom = 6;
-        }
-
-        map = new google.maps.Map(document.getElementById("map"), {
-          zoom: zoom,
-          center: map_focus,
-          mapTypeId: "hybrid"
-        });
-
-        const initURL =
-          "https://api.snotel.info/state/" + State_Selected;
-
-        fetch(initURL) // Call the fetch function passing the url of the API as a parameter
-          .then(response => response.text())
-          .then(
-            data => {
-              //console.log(data);
-              map.data.addGeoJson(JSON.parse(data));
-
-              map.data.setStyle(function(feature) {
-                var color = "#" + feature.getProperty(Color);
-                   if (Time == "elevation") {
-            var labeler = parseInt(feature.getProperty(Time) / 100) / 10;
-          } else if (Time == "Avg"){
-            var labeler = parseInt(feature.getProperty(Time)) + '%';
-          } else{
-            var labeler = feature.getProperty(Time) + '"';
-          }
-
-                return {
-                  label: labeler,
-                  icon: {
-                    path: google.maps.SymbolPath.CIRCLE,
-                    scale: 15,
-                    fillColor: color,
-                    fillOpacity: 1,
-                    strokeWeight: 1,
-                    strokeColor: color
-                  }
-                };
-              });
-
-              map.data.addListener("click", function(event) {
-                // marker.data.overrideStyle(event.feature, {visible: true});
-                Selected_Site_Triplet = event.feature.getProperty(
-                  "stationTriplet"
-                );
-                Selected_SiteID = event.feature.getProperty("name");
-                Selected_SiteName = event.feature.getProperty("name");
-                Selected_Elevation = event.feature.getProperty("elevation");
-                // The 'Wind' property is retrieved from the clicked map feature.
-                Selected_Site_HasWind = event.feature.getProperty("Wind");
-
-                // console.log(Selected_SiteID);
-                //console.log(event);
-                setData(Selected_Site_Triplet);
-                get_chart_legend();
-                ga(
-                  "send",
-                  "event",
-                  "Map Click",
-                  Selected_Site_Triplet,
-                  "Marker Click"
-                );
-
-                var x = document.getElementById("map");
-                var y = document.getElementById("snowchart");
-                if (x.style.display === "none") {
-                  x.style.display = "block";
-                  y.style.display = "none";
-                } else {
-                  x.style.display = "none";
-                  y.style.display = "block";
-                }
-                var z = document.getElementById("back_to_map");
-                z.style.display = "block";
-                overlay_off();
-                //resizeCanvas();
-              });
-            }
-            // Your code for handling the data you get from the API
-          )
-          .catch(function() {
-            // This is where you run code if the server returns any errors
-            window.alert("Failed To Retreive Data");
-          });
-
-        return map;
-      };
-    </script>
-  </head>
-  <body>
+<body>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.8.0/Chart.bundle.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/iframe-resizer/4.2.1/iframeResizer.contentWindow.min.js"></script>
     <script
-      type="text/javascript"
-      src="//code.jquery.com/jquery-1.11.0.min.js"
-    ></script>
-    <script
-      type="text/javascript"
-      src="//code.jquery.com/jquery-migrate-1.2.1.min.js"
-    ></script>
-    <script
-      type="text/javascript"
-      src="//cdn.jsdelivr.net/npm/slick-carousel@1.8.1/slick/slick.min.js"
-    ></script>
+        src="https://cdnjs.cloudflare.com/ajax/libs/iframe-resizer/4.2.1/iframeResizer.contentWindow.min.js"></script>
+    <script type="text/javascript" src="//code.jquery.com/jquery-1.11.0.min.js"></script>
+    <script type="text/javascript" src="//code.jquery.com/jquery-migrate-1.2.1.min.js"></script>
+    <script type="text/javascript" src="//cdn.jsdelivr.net/npm/slick-carousel@1.8.1/slick/slick.min.js"></script>
 
-    <div id="overlay2">
-      <div
-        id="overlay_text">
-        <h1>
-          Snotel.Info
-        </h1>
-        <h2>
-          NRCS SnoTel Data
-        </h2>
-      </div>
-      <div id="install_button">
-        <button id="butInstall" type="button">
-          App
-        </button>
-      </div>
-    </div>
-
-    <div id="overlay3" onclick="overlay_3_toggle()">
-      <div id="overlay3_v">
-        <!--<div id="overlay_text3">Add App</div>-->
-        <img
-          src="https://cdn.glitch.com/79a8371f-8b19-442a-8cef-9def4343f601%2FHow%20To%20iOS%20300.png?v=1585883636633"
-          alt="How To Install App on iOS"
-        />
-        <div id="overlay3_vv">
-          <img
-            src="https://cdn.glitch.com/79a8371f-8b19-442a-8cef-9def4343f601%2Farrows.png?v=1585886377839"
-            alt="Click To Get App"
-          />
-        </div>
-      </div>
-    </div>
-
+    <!-- Map Container -->
     <div id="map"></div>
-    <div id="legenddiv" class="legend" draggable="true">
-      <div class="legend_title" id="legend_title">Current Depth</div>
-      <div class="grow"> <div class="trow" id="L5"> </div> <div class="trow" id="T5"> 100" </div> </div>
-      <div class="grow"> <div class="trow" id="L4"> </div> <div class="trow" id="T4"> 80" </div> </div>
-      <div class="grow"> <div class="trow" id="L3"> </div> <div class="trow" id="T3"> 60" </div> </div>
-      <div class="grow"> <div class="trow" id="L2"> </div> <div class="trow" id="T2"> 40" </div> </div>
-      <div class="grow"> <div class="trow" id="L1"> </div> <div class="trow" id="T1"> 20" </div> </div>
-      <div class="grow"> <div class="trow" id="L0"> </div> <div class="trow" id="T0"> 0" </div> </div>
+
+    <!-- UI Layer -->
+    <div id="ui-layer">
+        <!-- Top Bar -->
+        <div class="top-bar glass-panel">
+            <button class="info-btn" onclick="toggleInfoModal()">
+                <i class="fa fa-info-circle"></i>
+            </button>
+            <button class="theme-toggle" onclick="toggleTheme()">
+                <i class="fa fa-moon-o" id="theme-icon"></i>
+            </button>
+            <div id="install_button" style="display: none;">
+                <button id="butInstall" class="install-btn" type="button" aria-label="Install App">
+                    <i class="fa fa-download"></i>
+                </button>
+            </div>
+            <div class="app-branding">
+                <h1>Snotel.Info</h1>
+                <h2>NRCS SnoTel Data</h2>
+            </div>
+
+            <div class="state-selector-container">
+                <select onchange="changeState()" id="State_Selecter">
+                    <option value="AK">AK</option>
+                    <option value="AZ">AZ</option>
+                    <option value="CA">CA</option>
+                    <option value="CO">CO</option>
+                    <option value="ID">ID</option>
+                    <option value="MT">MT</option>
+                    <option value="NM">NM</option>
+                    <option value="NV">NV</option>
+                    <option value="OR">OR</option>
+                    <option value="UT">UT</option>
+                    <option value="WA">WA</option>
+                    <option value="WY">WY</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Legend (Floating) -->
+        <div id="legenddiv" class="legend glass-panel">
+            <div class="legend_title" id="legend_title">Current Depth</div>
+            <div class="grow">
+                <div class="trow" id="L5"> </div>
+                <div class="trow" id="T5"> 100" </div>
+            </div>
+            <div class="grow">
+                <div class="trow" id="L4"> </div>
+                <div class="trow" id="T4"> 80" </div>
+            </div>
+            <div class="grow">
+                <div class="trow" id="L3"> </div>
+                <div class="trow" id="T3"> 60" </div>
+            </div>
+            <div class="grow">
+                <div class="trow" id="L2"> </div>
+                <div class="trow" id="T2"> 40" </div>
+            </div>
+
+
+            <div class="grow">
+                <div class="trow" id="L1"> </div>
+                <div class="trow" id="T1"> 20" </div>
+            </div>
+            <div class="grow">
+                <div class="trow" id="L0"> </div>
+                <div class="trow" id="T0"> 0" </div>
+            </div>
+        </div>
+
+        <!-- Bottom Controls -->
+        <div class="bottom-controls glass-panel">
+            <div class="slider-class" id="car">
+                <div id="Today">Current Depth</div>
+                <div id="OneDay">One Day Change</div>
+                <div id="FiveDay">Five Day Change</div>
+                <div id="Elevation">Elevation (1k ft)</div>
+                <div id="Avg">% Avg SWE</div>
+            </div>
+        </div>
     </div>
+
+    <!-- Chart View -->
+    <div id="snowchart">
+        <button id="back_to_map" onclick="returnToMap()">
+            <i class="fa fa-arrow-left"></i> Back to Map
+        </button>
+
+        <div id="loading-indicator"
+            style="display: none; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: var(--text-dark); font-size: 24px; z-index: 2;">
+            Loading Site Data...
+        </div>
+        <div id="no-data-warning"
+            style="display: none; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: red; font-size: 24px; z-index: 2;">
+            Site did not return data.
+        </div>
+
+        <button id="wind_toggle_btn" onclick="toggleWind()"
+            style="display:none; position: absolute; top: 20px; right: 20px; z-index: 21; background: var(--white); border: 1px solid rgba(0,0,0,0.1); padding: 10px 20px; border-radius: 30px; cursor: pointer; font-size: 0.9rem; font-weight: 600; color: var(--text-dark); box-shadow: 0 4px 12px rgba(0,0,0,0.08);">
+            Show Wind
+        </button>
+
+        <canvas id="snowChart"></canvas>
+    </div>
+
+    <!-- Install Overlays -->
+    <div id="overlay3" class="modal-overlay" style="display:none; z-index: 300;" onclick="overlay_3_toggle()">
+        <div class="modal-content glass-panel" style="max-width: 350px; text-align: center; margin: auto;"
+            onclick="event.stopPropagation()">
+            <h3 style="margin-bottom: 20px;">Install on iPhone</h3>
+
+            <div style="display: flex; flex-direction: column; gap: 25px; margin-bottom: 25px;">
+                <div class="install-step">
+                    <i class="fa fa-external-link"
+                        style="font-size: 2rem; color: var(--primary-color); margin-bottom: 10px; display: block;"></i>
+                    <p style="margin: 0; color: var(--text-dark);">1. Tap the <strong>Share</strong> button in your
+                        browser
+                        toolbar.</p>
+                </div>
+
+                <div class="install-step">
+                    <i class="fa fa-plus-square-o"
+                        style="font-size: 2rem; color: var(--primary-color); margin-bottom: 10px; display: block;"></i>
+                    <p style="margin: 0; color: var(--text-dark);">2. Scroll down and select <strong>Add to Home
+                            Screen</strong>.
+                    </p>
+                </div>
+            </div>
+
+            <button onclick="overlay_3_toggle()"
+                style="background: var(--primary-color); color: var(--white); border: none; padding: 12px 24px; border-radius: var(--radius-sm); font-weight: 600; cursor: pointer; font-size: 1rem;">Got
+                it!</button>
+        </div>
+    </div>
+
+
+
 
     <!--Load the API from the specified URL
     * The async attribute allows the browser to render the page while the API loads
     * The key parameter will contain your own API key (which is not needed for this tutorial)
     * The callback parameter executes the initMap() function
     -->
-    <script>
-      // Initialize and add the map
-      async function setCookie(c_name,value,exdays) {
-        var exdate=new Date();
-        exdate.setDate(exdate.getDate() + exdays);
-        var c_value=escape(value) + ((exdays==null) ? "" : "; expires="+exdate.toUTCString());
-        document.cookie=c_name + "=" + c_value;
-      }
 
-      function getCookie(c_name) {
-        var i,x,y,ARRcookies=document.cookie.split(";");
-        for (i=0;i<ARRcookies.length;i++) {
-          x=ARRcookies[i].substr(0,ARRcookies[i].indexOf("="));
-          y=ARRcookies[i].substr(ARRcookies[i].indexOf("=")+1);
-          x=x.replace(/^\s+|\s+$/g,"");
-          if (x==c_name) {
-            return unescape(y);
-          }
-        }
-        return "";
-      }
-      
-      async function saveMapState() { 
-        var mapZoom=map.getZoom(); 
-        var mapCentre=map.getCenter(); 
-        var mapLat=mapCentre.lat(); 
-        var mapLng=mapCentre.lng(); 
-        var cookiestring=mapLat+"_"+mapLng+"_"+mapZoom; 
-        setCookie("myMapCookie",cookiestring, 30); 
-      } 
-      
-      function tilesLoaded() {
-        google.maps.event.clearListeners(map, 'tilesloaded');
-        google.maps.event.addListener(map, 'zoom_changed', saveMapState);
-        google.maps.event.addListener(map, 'dragend', saveMapState);
-      }   
-      
-      function initMap() {
-        var gotCookieString=getCookie("myMapCookie"); 
-        var splitStr = gotCookieString.split("_");
-        var savedMapLat = parseFloat(splitStr[0]);
-        var savedMapLng = parseFloat(splitStr[1]);
-        var savedMapZoom = parseFloat(splitStr[2]);
 
-        var cookie = getCookie("state");
-        console.log(cookie);
-        if (states.includes(cookie) == false) {
-          map = get_new_map("CO", Option);
-          document.getElementById("State_Selecter").selectedIndex = 3;
-        } else {
-          map = get_new_map(cookie, Option);
-          document.getElementById("State_Selecter").value = cookie;
-        }
-        if ((!isNaN(savedMapLat)) && (!isNaN(savedMapLng)) && (!isNaN(savedMapZoom))) {
-          map.setCenter(new google.maps.LatLng(savedMapLat,savedMapLng));
-          map.setZoom(savedMapZoom);
-        }
-        google.maps.event.addListener(map, 'tilesloaded', tilesLoaded);
-      }
-    </script>
+    <script src="app.js"></script>
 
-    <script
-      async
-      defer
-      src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAh0B_fB92e1GfW3y-NFtDKZ68pc8DRvPU&callback=initMap"
-    ></script>
+    <script async defer
+        src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAh0B_fB92e1GfW3y-NFtDKZ68pc8DRvPU&callback=initMap"></script>
 
-    <div style="position: relative; z-index: 2; width: 50%">
-      <button
-        id="back_to_map"
-        class="btn"
-        onclick="returnToMap()"
-        style="position: fixed; top: 5vh; left: 2.5vw; display: none;
-          width: 15vw;
-          max-width: 75px;
-          max-height: 50px;
-          height: 10vh;
-          color: #666666;
-          text-align: center;
-          font-family: sans-serif;
-          font-weight: 400;
-          background-color: rgba(0, 0, 0, 0);
-               border-color: #cccccc;"
-      >
-        <i class="fa fa-arrow-left"></i>
-      </button>
+    <!-- Data Info Modal -->
+    <div id="infoModal" class="modal-overlay" style="display: none;">
+        <div class="modal-content glass-panel">
+            <button class="modal-close" onclick="toggleInfoModal()">&times;</button>
+            <h3>Understanding Your Snow Data</h3>
+
+            <div class="modal-body">
+                <h4 class="section-header">How to Use the App</h4>
+
+                <section>
+                    <h5>🗺️ State Selector & Navigation</h5>
+                    <p>Use the <strong>State Selector</strong> dropdown in the top right to switch between Western US
+                        states. The
+                        map remembers your location focus for each state.</p>
+                </section>
+
+                <section>
+                    <h5>📊 Viewing Data Layers</h5>
+                    <p>Swipe the bottom control panel to switch map modes (e.g., from "Current Depth" to "1 Day
+                        Change").</p>
+                </section>
+
+                <section>
+                    <h5>🏔️ Station History</h5>
+                    <p>Click any colored site marker to reveal its <strong>7-day history</strong>. The chart shows daily
+                        trends
+                        for snow depth and temperature.</p>
+                </section>
+
+                <section>
+                    <h5>💨 Wind Data</h5>
+                    <p>For stations with wind sensors, tap the "Show Wind" button on the chart to see wind speed and
+                        direction
+                        arrows.</p>
+                </section>
+
+                <section>
+                    <h5>📱 Offline Use</h5>
+                    <p>This app requires an internet connection to load new map data and charts. If you are offline, you
+                        will see a notice screen until connection is restored.</p>
+                </section>
+
+                <hr class="modal-divider">
+
+                <h4 class="section-header">Metric Explanations</h4>
+
+                <section>
+                    <h5>❄️ Snow Depth (Current)</h5>
+                    <p>Total snowpack depth measured at 5:00 AM today. We automatically filter out sensor errors to show
+                        the most
+                        valid reading.</p>
+                </section>
+
+                <section>
+                    <h5>📈 1 Day & 5 Day Change</h5>
+                    <p>Change in snow depth over the last 24 hours or 5 days. Positive numbers mean new snow!</p>
+                </section>
+
+                <section>
+                    <h5>💧 % Average SWE</h5>
+                    <p><strong>(Current Water Content / Historical Average) * 100</strong></p>
+                    <p>Compares the current snowpack's water content to the historical average for this date.
+                        <strong>>100%</strong> means above average snowpack.
+                    </p>
+                    <p><em>Note: We use Snow Water Equivalent (SWE) for this metric as it's the standard for historical
+                            comparison.</em></p>
+                </section>
+
+                <section>
+                    <h5>Data Source</h5>
+                    <p>Sourced directly from the <strong>NRCS Snotel Network</strong>, updated daily.</p>
+                </section>
+            </div>
+        </div>
     </div>
 
-    <script>
-      function returnToMap() {
-        var legend = document.getElementById("legenddiv");
-        var x = document.getElementById("map");
-        var y = document.getElementById("snowchart");
-        var z = document.getElementById("back_to_map");
+    <!-- Welcome / Landing Screen -->
+    <div id="welcomeScreen" class="modal-overlay" style="display: none; z-index: 200;">
+        <div class="modal-content glass-panel" style="max-width: 600px; text-align: center;">
+            <h3 style="font-size: 2rem; margin-bottom: 10px;">Welcome to Snotel.Info</h3>
+            <p style="font-size: 1.1rem; color: var(--text-light); margin-bottom: 30px;">
+                Select your region to view the latest snowpack data.
+            </p>
 
-        if (x.style.display === "none") {
-          //snow chart is showing, go back to map
-          x.style.display = "block";
-          y.style.display = "none";
-          z.style.display = "none";
-          legend.style.display = "block";
-          overlay_on();
-          $(".slick-slider").slick("setPosition");
-          get_map_legend(Option);
-        }
-      }
-    </script>
-
-    <div
-      id="snowchart"
-      class="chart-container"
-      style="position: relative; width: 95vw; height: 90vh; margin: 15px; display: none; z-index:1;"
-    >
-      <div
-        id="loading-indicator"
-        style="display: none; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: black; font-size: 24px; z-index: 2;"
-      >
-        Loading Site Data...
-      </div>
-      <div
-        id="no-data-warning"
-        style="display: none; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: red; font-size: 24px; z-index: 2;"
-      >
-        Site did not return data.
-      </div>
-      <canvas id="snowChart" />
+            <div class="state-grid">
+                <button onclick="selectWelcomeState('CO')">Colorado</button>
+                <button onclick="selectWelcomeState('UT')">Utah</button>
+                <button onclick="selectWelcomeState('CA')">California</button>
+                <button onclick="selectWelcomeState('WA')">Washington</button>
+                <button onclick="selectWelcomeState('OR')">Oregon</button>
+                <button onclick="selectWelcomeState('ID')">Idaho</button>
+                <button onclick="selectWelcomeState('MT')">Montana</button>
+                <button onclick="selectWelcomeState('WY')">Wyoming</button>
+                <button onclick="selectWelcomeState('NM')">New Mexico</button>
+                <button onclick="selectWelcomeState('NV')">Nevada</button>
+                <button onclick="selectWelcomeState('AZ')">Arizona</button>
+                <button onclick="selectWelcomeState('AK')">Alaska</button>
+            </div>
+        </div>
     </div>
 
-    <div id="overlay">
-      <div id="State_Title">State</div>
-      <div id="Data_Title">Data</div>
-      <div id="State_Div" class="custom-select">
-        <select onchange="changeState()" id="State_Selecter">
-          <option value="AK">AK</option>
-          <option value="AZ">AZ</option>
-          <option value="CA">CA</option>
-          <option value="CO">CO</option>
-          <option value="ID">ID</option>
-          <option value="MT">MT</option>
-          <option value="NM">NM</option>
-          <option value="NV">NV</option>
-          <option value="OR">OR</option>
-          <option value="UT">UT</option>
-          <option value="WA">WA</option>
-          <option value="WY">WY</option>
-        </select>
-      </div>
-      <div class="slider-class" id="car">
-        <div id="Today">Current Depth</div>
-        <div id="OneDay">One Day Change</div>
-        <div id="FiveDay">Five Day Change</div>
-        <div id="Elevation">Elevation (1k ft)</div>
-        <div id="Avg">% Avg SWE</div>
-      </div>
+    <!-- Offline Takeover Overlay -->
+    <div id="offline-overlay" class="modal-overlay"
+        style="display: none; z-index: 1000; align-items: center; justify-content: center;">
+        <div class="modal-content glass-panel" style="max-width: 400px; text-align: center; height: auto;">
+            <i class="fa fa-wifi"
+                style="font-size: 4rem; color: var(--text-light); margin-bottom: 20px; opacity: 0.5;"></i>
+            <h3 style="margin-bottom: 10px; border-bottom: none;">You are Offline</h3>
+            <p style="font-size: 1rem; color: var(--text-dark);">
+                This app requires an internet connection to function. Please check your signal or connect to Wi-Fi.
+            </p>
+        </div>
     </div>
 
-    <script type="text/javascript">
-      $(".slider-class").slick({
-        centerMode: true,
-        centerPadding: "0px",
-        slidesToShow: 1,
-        arrows: true,
-        responsive: [
-          {
-            breakpoint: 768,
-            settings: {
-              centerMode: true,
-              centerPadding: "0px",
-              slidesToShow: 1,
-              arrow: true
-            }
-          },
-          {
-            breakpoint: 600,
-            settings: {
-              centerMode: true,
-              centerPadding: "0px",
-              slidesToShow: 1,
-              arrows: true
-            }
-          }
-        ]
-      });
-
-      $(".slider-class").on("afterChange", function(
-        event,
-        slick,
-        currentSlide
-      ) {
-        //$('.content').hide();
-        console.log(currentSlide);
-        if (currentSlide == 0) {
-          Option = 0;
-        }
-        if (currentSlide == 1) {
-          Option = 1;
-        }
-        if (currentSlide == 2) {
-          Option = 5;
-        }
-        if (currentSlide == 3) {
-          Option = 4;
-        }
-        if (currentSlide == 4) {
-          Option = 6;
-        }
-        changeData(Option);
-      });
-    </script>
     <script src="install.js"></script>
-  </body>
-  
+</body>
 
-  <script>
-    if ("serviceWorker" in navigator) {
-      window.addEventListener("load", () => {
-        navigator.serviceWorker.register("/service-worker.js").then(reg => {
-          console.log("Service worker registered.", reg);
-        });
-      });
-    }
-    window.addEventListener("load", function() {
-      window.history.pushState({}, "");
-    });
-
-    window.addEventListener("popstate", function() {
-      if (document.getElementById("map").style.display == "none") {
-        console.log("aye");
-        window.history.pushState({}, "");
-        returnToMap();
-      }
-    });
-    
-          window.onload = addListeners;
-
-    const width =
-      window.innerWidth ||
-      document.documentElement.clientWidth ||
-      document.body.clientWidth;
-    const height =
-      window.innerHeight ||
-      document.documentElement.clientHeight ||
-      document.body.clientHeight;
-
-    if (!isInStandaloneMode()) {
-      document.getElementById("snowchart").style.height = "85vh";
-    }
-
-    function runTests() {
-      console.log("--- Running Wind Logic Tests ---");
-
-      function assert(condition, message) {
-        if (condition) {
-          console.log(`%cPASS: ${message}`, "color: green;");
-        } else {
-          console.error(`%cFAIL: ${message}`, "color: red;");
-        }
-      }
-
-      // Test cases for degToCompass()
-      console.log("\nTesting degToCompass()...");
-      assert(degToCompass(0) === "N", "0 degrees should be North (N)");
-      assert(degToCompass(22) === "NNE", "22 degrees should be North-Northeast (NNE)");
-      assert(degToCompass(45) === "NE", "45 degrees should be Northeast (NE)");
-      assert(degToCompass(90) === "E", "90 degrees should be East (E)");
-      assert(degToCompass(180) === "S", "180 degrees should be South (S)");
-      assert(degToCompass(270) === "W", "270 degrees should be West (W)");
-      assert(degToCompass(350) === "N", "350 degrees should be North (N)");
-
-      // Test cases for arrow angle calculation
-      console.log("\nTesting Arrow Angle Calculation (in Radians)...");
-      const getArrowAngle = (windDir) => (windDir + 270) * Math.PI / 180;
-      
-      // Wind from North (0°) -> Arrow points South (180° on compass, 270° or -90° on canvas)
-      assert(getArrowAngle(0).toFixed(4) === (270 * Math.PI / 180).toFixed(4), "Wind from 0° (N), arrow should point South");
-
-      // Wind from East (90°) -> Arrow points West (270° on compass, 0° or 360° on canvas)
-      assert(getArrowAngle(90).toFixed(4) === (360 * Math.PI / 180).toFixed(4), "Wind from 90° (E), arrow should point West");
-
-      // Wind from South (180°) -> Arrow points North (0° on compass, 90° on canvas)
-      assert(getArrowAngle(180).toFixed(4) === (450 * Math.PI / 180).toFixed(4) % (2 * Math.PI).toFixed(4), "Wind from 180° (S), arrow should point North");
-
-      // Wind from West (270°) -> Arrow points East (90° on compass, 180° on canvas)
-      assert(getArrowAngle(270).toFixed(4) === (540 * Math.PI / 180).toFixed(4) % (2 * Math.PI).toFixed(4), "Wind from 270° (W), arrow should point East");
-
-      console.log("\n--- Test Run Complete ---");
-    }
-
-    console.log("To run tests, execute `runTests()` in the console.");
-  </script>
 </html>
-

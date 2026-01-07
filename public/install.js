@@ -58,6 +58,9 @@ function saveBeforeInstallPromptEvent(evt) {
     console.log('iOS device, not saving beforeinstallprompt event.');
     return;
   }
+  // Prevent the mini-infobar from appearing on mobile
+  evt.preventDefault();
+
   deferredInstallPrompt = evt;
   console.log('Saved beforeinstallprompt event.', deferredInstallPrompt);
   // If the button is already available, show it. Otherwise, the DOMContentLoaded listener will.
@@ -164,6 +167,6 @@ function iOS() {
     'iPhone',
     'iPod'
   ].includes(navigator.platform)
-  // For iOS 13+
-  || (navigator.userAgent.includes("Mac") && "ontouchend" in document)
+    // For iOS 13+
+    || (navigator.userAgent.includes("Mac") && "ontouchend" in document)
 }
