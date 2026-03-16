@@ -1,38 +1,20 @@
-import axios from "axios";
 import chroma from "chroma-js";
 import GeoJSON from "geojson";
-import xmlParser from "xml2json";
-import soapRequest from "easy-soap-request";
 import AWS from "aws-sdk";
 import fs from "fs";
 
-const states = ["CO", "WA", "UT", "CA", "AK", "WY", "MT", "OR", "AZ", "NM", "NV", "ID"];
-
-let final_data = [];
-let states_data = [states.length];
-
-const url = "https://wcc.sc.egov.usda.gov/awdbWebService/services?getStations";
-const HourlyUrl = "https://wcc.sc.egov.usda.gov/awdbWebService/services?";
-const MetaUrl =
-  "https://wcc.sc.egov.usda.gov/awdbWebService/services?getStationMetadataMultiple";
-const HistoricalUrl =
-  "https://wcc.sc.egov.usda.gov/awdbWebService/services?getAveragesData";
-const sampleHeaders = {
-  "user-agent": "sampleTest",
-  "Content-Type": "text/xml;charset=UTF-8"
-};
-
-let stations;
-let i;
-let input;
-let Element = "SNWD";
-
 const s3 = new AWS.S3();
 const bucketName = "snotel.info";
-const getStationsKey = "getstations.xml";
+
+const states = ["CO", "WA", "UT", "CA", "AK", "WY", "MT", "OR", "AZ", "NM", "NV", "ID"];
+
+// Standard Chrome User-Agent prevents NRCS AWS WAF from blocking our lambda requests
+const headers = {
+  "Accept": "application/json",
+  "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36"
+};
 
 export async function handler(event, context) {
-  var state_data;
   var f1 = chroma.scale(["red", "#cccccc", "white"]).domain([-6, -1, 6]);
   var f5 = chroma.scale(["red", "#cccccc", "white"]).domain([-10, -1, 10]);
   var fb = chroma.scale(["red", "#cccccc", "white"]).domain([0, 50, 100]);
@@ -47,286 +29,245 @@ export async function handler(event, context) {
     try {
       const filename = "assets/" + state + ".json";
 
-      var now = new Date();
-      var Today5AM = new Date(
-        now.getFullYear(),
-        now.getMonth(),
-        now.getDate(),
-        now.getHours(),
-        0,
-        0,
-        0
-      );
-      var SixDaysAgo = new Date(Today5AM - 6 * 24 * 60 * 60 * 1000);
-      var FiveDaysAgo = new Date(Today5AM - 5 * 24 * 60 * 60 * 1000);
-      var TwoDayAgo = new Date(Today5AM - 2 * 24 * 60 * 60 * 1000);
-      var OneDayAgo = new Date(Today5AM - 1 * 24 * 60 * 60 * 1000);
-      var OneDayAhead = new Date(Today5AM.getTime() + 2 * 24 * 60 * 60 * 1000);
-      var dates = [
-        OneDayAhead,
-        Today5AM,
-        OneDayAgo,
-        TwoDayAgo,
-        FiveDaysAgo,
-        SixDaysAgo,
-      ];
-      console.log(dates);
+      // --- DATE MATH ---
+      // NRCS REST API uses yyyy-MM-dd HH:mm or relative dates. We'll format absolute dates.
+      const now = new Date();
 
-      const haswindresult = await hasWind(state);
-      const hasWindSet = new Set(haswindresult);
+      // Calculate 5 AM today
+      const Today5AM = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 5, 0, 0);
 
-      console.log(haswindresult);
+      const formatApiDate = (dateObj) => {
+        const yyyy = dateObj.getFullYear();
+        const MM = String(dateObj.getMonth() + 1).padStart(2, '0');
+        const dd = String(dateObj.getDate()).padStart(2, '0');
+        return `${yyyy}-${MM}-${dd} 05:00`;
+      };
 
-      input =
-        '<?xml version="1.0" encoding="UTF-8"?> ' +
-        '<SOAP-ENV:Envelope xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/" xmlns:q0="http://www.wcc.nrcs.usda.gov/ns/awdbWebService" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"> ' +
-        "  <SOAP-ENV:Body> " +
-        "   <q0:getStations> " +
-        "      <stateCds>" +
-        state +
-        "</stateCds> " +
-        "      <networkCds>SNTL</networkCds> " +
-        "      <logicalAnd>true</logicalAnd> " +
-        "   </q0:getStations>" +
-        " </SOAP-ENV:Body>" +
-        "</SOAP-ENV:Envelope>";
+      const formatApiDateNoTime = (dateObj) => {
+        const yyyy = dateObj.getFullYear();
+        const MM = String(dateObj.getMonth() + 1).padStart(2, '0');
+        const dd = String(dateObj.getDate()).padStart(2, '0');
+        return `${yyyy}-${MM}-${dd}`;
+      };
 
-      const result = await getStations(input);
-      var states_stations = JSON.parse(xmlParser.toJson(result));
-      states_stations =
-        states_stations["soap:Envelope"]["soap:Body"][
-        "ns2:getStationsResponse"
-        ]["return"];
+      const dateStrings = {
+        today: formatApiDate(Today5AM),
+        yesterday: formatApiDate(new Date(Today5AM.getTime() - 1 * 24 * 60 * 60 * 1000)),
+        twoDaysAgo: formatApiDate(new Date(Today5AM.getTime() - 2 * 24 * 60 * 60 * 1000)),
+        fiveDaysAgo: formatApiDate(new Date(Today5AM.getTime() - 5 * 24 * 60 * 60 * 1000)),
+        sixDaysAgo: formatApiDate(new Date(Today5AM.getTime() - 6 * 24 * 60 * 60 * 1000)),
+        oneDayAhead: formatApiDate(new Date(Today5AM.getTime() + 1 * 24 * 60 * 60 * 1000)),
 
-      // Prepare XML requests
-      var Today_XML = getHourlyXML2(dates[2], dates[0], states_stations, "SNWD");
-      var Yesterday_XML = getHourlyXML2(dates[3], dates[2], states_stations, "SNWD");
-      var FiveDaysAgo_XML = getHourlyXML2(dates[5], dates[4], states_stations, "SNWD");
-      var Current_SWE_XML = getHourlyXML2(dates[2], dates[0], states_stations, "WTEQ");
-      var Historical_SWE_XML = getHistoricalXML(dates[2], dates[0], states_stations, "WTEQ");
-      var Meta_XML = getMetaXML(states_stations);
+        // Averages require YYYY-MM-DD
+        todayNoTime: formatApiDateNoTime(Today5AM),
+        yesterdayNoTime: formatApiDateNoTime(new Date(Today5AM.getTime() - 1 * 24 * 60 * 60 * 1000))
+      };
 
-      // Execute all requests concurrently
-      const [
-        meta,
-        TodayXML,
-        YesterdayXML,
-        FiveDaysAgoXML,
-        CurrentSWEXML,
-        HistoricalSWEXML
-      ] = await Promise.all([
-        getMeta(Meta_XML),
-        getHourly(Today_XML),
-        getHourly(Yesterday_XML),
-        getHourly(FiveDaysAgo_XML),
-        getHourly(Current_SWE_XML),
-        getHistorical(Historical_SWE_XML)
-      ]);
 
-      // Process Responses
-      var state_meta = JSON.parse(xmlParser.toJson(meta));
-      state_meta = state_meta["soap:Envelope"]["soap:Body"]["ns2:getStationMetadataMultipleResponse"]["return"];
+      // --- 1. FETCH STATIONS & METADATA ---
+      // The new REST API returns metadata (lat, lng, elevation) directly in the station list!
+      console.log(`Fetching stations for ${state}...`);
+      const stationsRes = await fetch(`https://wcc.sc.egov.usda.gov/awdbRestApi/services/v1/stations?stateCds=${state}&networkCds=SNTL&elements=SNWD`, { headers });
+      if (!stationsRes.ok) throw new Error(`Stations API failed: ${stationsRes.status}`);
+      const allStationsData = await stationsRes.json();
 
-      var Today_Data = JSON.parse(xmlParser.toJson(TodayXML));
-      Today_Data = Today_Data["soap:Envelope"]["soap:Body"]["ns2:getHourlyDataResponse"]["return"];
+      // Filter to only stations whose triplet state+network matches (e.g. "1005:CO:SNTL" -> state "CO", network "SNTL")
+      // This matches the SOAP behavior which only returned active SNTL stations for this state.
+      const stationsData = allStationsData.filter(s => {
+        const parts = s.stationTriplet.split(':');
+        return parts[1] === state && parts[2] === 'SNTL';
+      });
+      console.log(`Found ${stationsData.length} ${state} SNTL stations with SNWD (from ${allStationsData.length} total returned).`);
 
-      var Yesterday_Data = JSON.parse(xmlParser.toJson(YesterdayXML));
-      Yesterday_Data = Yesterday_Data["soap:Envelope"]["soap:Body"]["ns2:getHourlyDataResponse"]["return"];
+      // Build a comma-delimited string of all stations for the data request
+      const stationTripletsArr = stationsData.map(s => s.stationTriplet);
+      const stationTripletsString = stationTripletsArr.join(",");
 
-      var FiveDaysAgo_Data = JSON.parse(xmlParser.toJson(FiveDaysAgoXML));
-      FiveDaysAgo_Data = FiveDaysAgo_Data["soap:Envelope"]["soap:Body"]["ns2:getHourlyDataResponse"]["return"];
 
-      var CurrentSWE_Data = JSON.parse(xmlParser.toJson(CurrentSWEXML));
-      CurrentSWE_Data = CurrentSWE_Data["soap:Envelope"]["soap:Body"]["ns2:getHourlyDataResponse"]["return"];
-
-      var HistoricalSWE_Data = JSON.parse(xmlParser.toJson(HistoricalSWEXML));
-      HistoricalSWE_Data = HistoricalSWE_Data["soap:Envelope"]["soap:Body"]["ns2:getAveragesDataResponse"]["return"];
-
-      var cc;
-      var current_bases = [];
-
-      current_bases = get_best_data_from_object(Today_Data);
-      final_data = [];
-
-      var Today_Object = get_best_data_from_object(Today_Data);
-      var Yesterday_Object = get_best_data_from_object(Yesterday_Data);
-      var FiveDaysAgo_Object = get_best_data_from_object(FiveDaysAgo_Data);
-      var CurrentSWE_Object = get_best_data_from_object(CurrentSWE_Data);
-      var HistoricalSWE_Object =
-        get_best_hist_data_from_object(HistoricalSWE_Data);
-
-      for (cc = 0; cc < state_meta.length; cc++) {
-        final_data[cc] = {};
-        //new row for each object in old data
-        final_data[cc]["stationTriplet"] =
-          state_meta[cc]["stationTriplet"];
-        final_data[cc]["name"] = state_meta[cc]["name"];
-        final_data[cc]["latitude"] = state_meta[cc]["latitude"];
-        final_data[cc]["longitude"] = state_meta[cc]["longitude"];
-        final_data[cc]["Avg"] = parseInt(CurrentSWE_Object[cc] / HistoricalSWE_Object[cc] * 100);
-
-        // Optimize wind lookup using Set (created outside loop ideally, but array is small enough here)
-        // Better: Create Set outside loop.
-        if (hasWindSet.has(state_meta[cc]["stationTriplet"])) {
-          final_data[cc]["Wind"] = "Yes"
-        } else final_data[cc]["Wind"] = "No"
-
-        if (Today_Object[cc] > 0) {
-          final_data[cc]["Today"] = Today_Object[cc];
-        } else if (Today_Object[cc] > -10) {
-          final_data[cc]["Today"] = 0;
-        }
-
-        if (Yesterday_Object[cc] > 0) {
-          final_data[cc]["Yesterday"] = Yesterday_Object[cc];
-        } else if (Yesterday_Object[cc] > -10) {
-          final_data[cc]["Yesterday"] = 0;
-        }
-
-        if (FiveDaysAgo_Object[cc] > 0) {
-          final_data[cc]["FiveDaysAgo"] = FiveDaysAgo_Object[cc];
-        } else if (FiveDaysAgo_Object[cc] > -10) {
-          final_data[cc]["FiveDaysAgo"] = 0;
-        }
-
-        if (
-          final_data[cc]["Today"] == -999 ||
-          final_data[cc]["Today"] == null
-        ) {
-          final_data[cc]["Today"] = final_data[cc]["Yesterday"];
-        }
-        if (
-          final_data[cc]["Today"] == -999 ||
-          final_data[cc]["Today"] == null
-        ) {
-          final_data[cc]["Today"] = final_data[cc]["FiveDaysAgo"];
-        }
-
-        if (
-          final_data[cc]["Yesterday"] == -999 ||
-          final_data[cc]["Yesterday"] == null
-        ) {
-          final_data[cc]["Yesterday"] = final_data[cc]["Today"];
-        }
-        if (
-          final_data[cc]["Yesterday"] == -999 ||
-          final_data[cc]["Yesterday"] == null
-        ) {
-          final_data[cc]["Yesterday"] =
-            final_data[cc]["FiveDaysAgo"];
-        }
-
-        if (
-          final_data[cc]["FiveDaysAgo"] == -999 ||
-          final_data[cc]["FiveDaysAgo"] == null
-        ) {
-          final_data[cc]["FiveDaysAgo"] =
-            final_data[cc]["Yesterday"];
-        }
-        if (
-          final_data[cc]["FiveDaysAgo"] == -999 ||
-          final_data[cc]["FiveDaysAgo"] == null
-        ) {
-          final_data[cc]["FiveDaysAgo"] = final_data[cc]["Today"];
-        }
-
-        if (
-          final_data[cc]["Today"] == -999 ||
-          final_data[cc]["Today"] == null
-        ) {
-          final_data[cc]["Today"] = 0;
-        }
-        if (
-          final_data[cc]["Yesterday"] == -999 ||
-          final_data[cc]["Yesterday"] == null
-        ) {
-          final_data[cc]["Yesterday"] = 0;
-        }
-        if (
-          final_data[cc]["FiveDaysAgo"] == -999 ||
-          final_data[cc]["FiveDaysAgo"] == null
-        ) {
-          final_data[cc]["FiveDaysAgo"] = 0;
-        }
-
-        final_data[cc]["OneDayChange"] =
-          final_data[cc]["Today"] - final_data[cc]["Yesterday"];
-        final_data[cc]["FiveDayChange"] =
-          final_data[cc]["Today"] - final_data[cc]["FiveDaysAgo"];
-        final_data[cc]["TodayColor"] = rgbToHex(
-          fb(final_data[cc]["Today"])
-        );
-        final_data[cc]["OneDayColor"] = rgbToHex(
-          f1(final_data[cc]["OneDayChange"])
-        );
-        final_data[cc]["FiveDayColor"] = rgbToHex(
-          f5(final_data[cc]["FiveDayChange"])
-        );
-
-        final_data[cc]["DoubleCheck"] =
-          FiveDaysAgo_Data[cc]["stationTriplet"];
-        final_data[cc]["elevation"] = parseInt(
-          state_meta[cc]["elevation"]
-        );
-        final_data[cc]["elevationColor"] = rgbToHex(
-          fe(state_meta[cc]["elevation"])
-        );
-        final_data[cc]["avgColor"] = rgbToHex(fh(final_data[cc]["Avg"]));
-        if (
-          final_data[cc]["Avg"] < 0 ||
-          final_data[cc]["Avg"] == null ||
-          HistoricalSWE_Object[cc] == null
-        ) {
-          final_data[cc]["avgColor"] = "000000";
-        }
+      // --- 2. COMPILE WIND STATIONS ---
+      console.log(`Fetching wind stations for ${state}...`);
+      const windRes = await fetch(`https://wcc.sc.egov.usda.gov/awdbRestApi/services/v1/stations?stateCds=${state}&networkCds=SNTL&elements=WSPDV`, { headers });
+      let hasWindSet = new Set();
+      if (windRes.ok) {
+        const windData = await windRes.json();
+        hasWindSet = new Set(windData.map(s => s.stationTriplet));
+      } else {
+        console.warn(`Wind API failed with: ${windRes.status}`);
       }
-      state_data = JSON.stringify(
+
+
+      // --- 3. FETCH HOURLY & HISTORICAL DATA ---
+      // The USDA REST API silently drops data when you request thousands of stations in one URL.
+      // Solution: split into chunks of 100, fire ALL chunks in parallel, then merge results.
+      const chunkSize = 100;
+      let jsonToday = [], jsonYesterday = [], jsonFive = [], jsonSWE = [], jsonHistorical = [];
+
+      const fetchChunk = async (chunk) => {
+        const chunkString = chunk.join(",");
+        const urls = [
+          `https://wcc.sc.egov.usda.gov/awdbRestApi/services/v1/data?stationTriplets=${chunkString}&elements=SNWD&duration=HOURLY&beginDate=${dateStrings.yesterday}&endDate=${dateStrings.oneDayAhead}`,
+          `https://wcc.sc.egov.usda.gov/awdbRestApi/services/v1/data?stationTriplets=${chunkString}&elements=SNWD&duration=HOURLY&beginDate=${dateStrings.twoDaysAgo}&endDate=${dateStrings.yesterday}`,
+          `https://wcc.sc.egov.usda.gov/awdbRestApi/services/v1/data?stationTriplets=${chunkString}&elements=SNWD&duration=HOURLY&beginDate=${dateStrings.sixDaysAgo}&endDate=${dateStrings.fiveDaysAgo}`,
+          `https://wcc.sc.egov.usda.gov/awdbRestApi/services/v1/data?stationTriplets=${chunkString}&elements=WTEQ&duration=DAILY&beginDate=${dateStrings.yesterdayNoTime}&endDate=${dateStrings.todayNoTime}`,
+          `https://wcc.sc.egov.usda.gov/awdbRestApi/services/v1/data?stationTriplets=${chunkString}&elements=WTEQ&duration=DAILY&beginDate=${dateStrings.yesterdayNoTime}&endDate=${dateStrings.yesterdayNoTime}&centralTendencyType=AVERAGE`
+        ];
+        const responses = await Promise.all(urls.map(u => fetch(u, { headers })));
+        return Promise.all(responses.map(r => r.ok ? r.json() : []));
+      };
+
+      // Build all chunk arrays
+      const chunks = [];
+      for (let i = 0; i < stationTripletsArr.length; i += chunkSize) {
+        chunks.push(stationTripletsArr.slice(i, i + chunkSize));
+      }
+      console.log(`Fetching API data for ${stationTripletsArr.length} stations in ${chunks.length} parallel chunks...`);
+
+      // Fire ALL chunks at once
+      const chunkResults = await Promise.all(chunks.map(fetchChunk));
+
+      // Merge results
+      for (const [tData, yData, fData, sData, hData] of chunkResults) {
+        jsonToday = jsonToday.concat(tData);
+        jsonYesterday = jsonYesterday.concat(yData);
+        jsonFive = jsonFive.concat(fData);
+        jsonSWE = jsonSWE.concat(sData);
+        jsonHistorical = jsonHistorical.concat(hData);
+      }
+
+
+      // Helper to extract the latest/best value from the REST JSON format
+      const extractBestValue = (apiResponseList, targetTriplet) => {
+        const stationRecord = apiResponseList.find(r => r.stationTriplet === targetTriplet);
+        if (!stationRecord || !stationRecord.data || stationRecord.data.length === 0) return -999;
+
+        const valuesArr = stationRecord.data[0].values;
+        if (!valuesArr || valuesArr.length === 0) return -999;
+
+        // Loop backwards to find the most recent valid number
+        for (let i = valuesArr.length - 1; i >= 0; i--) {
+          const v = valuesArr[i];
+          if (v.value !== null && v.value !== undefined) {
+            return parseInt(v.value);
+          }
+        }
+        return -999;
+      };
+
+      // Helper for historical SWE parsing. The average data is stored under timingCentralTendencies or a single value.
+      // For standard 'AVERAGE' REST call, looking at a single day, the average is just in 'values'
+      const extractHistoricalAvgSWE = (apiResponseList, targetTriplet) => {
+        const stationRecord = apiResponseList.find(r => r.stationTriplet === targetTriplet);
+        if (!stationRecord || !stationRecord.data || stationRecord.data.length === 0) return null;
+
+        const valuesArr = stationRecord.data[0].values;
+        if (!valuesArr || valuesArr.length === 0) return null;
+
+        let total = 0;
+        let count = 0;
+        for (let i = 0; i < valuesArr.length; i++) {
+          if (valuesArr[i].value !== null) {
+            total += parseFloat(valuesArr[i].value);
+            count++;
+          }
+        }
+        return count > 0 ? (total / count) : null;
+      };
+
+      let final_data = [];
+
+      // --- 4. BUILD FINAL GEOJSON PROPERTIES ---
+      for (let i = 0; i < stationsData.length; i++) {
+        const meta = stationsData[i];
+        const triplet = meta.stationTriplet;
+
+        let row = {
+          stationTriplet: triplet,
+          name: meta.name,
+          latitude: meta.latitude,
+          longitude: meta.longitude,
+          elevation: parseInt(meta.elevation),
+          Wind: hasWindSet.has(triplet) ? "Yes" : "No"
+        };
+
+        // Extract values
+        let tVal = extractBestValue(jsonToday, triplet);
+        let yVal = extractBestValue(jsonYesterday, triplet);
+        let fVal = extractBestValue(jsonFive, triplet);
+        let currentSwe = extractBestValue(jsonSWE, triplet);
+        let histSwe = extractHistoricalAvgSWE(jsonHistorical, triplet);
+
+
+        // Normalize Data using legacy boundary rules
+        row.Today = (tVal > 0) ? tVal : (tVal > -10 ? 0 : -999);
+        row.Yesterday = (yVal > 0) ? yVal : (yVal > -10 ? 0 : -999);
+        row.FiveDaysAgo = (fVal > 0) ? fVal : (fVal > -10 ? 0 : -999);
+
+        // Cascading Fallbacks
+        if (row.Today === -999) row.Today = row.Yesterday;
+        if (row.Today === -999) row.Today = row.FiveDaysAgo;
+        if (row.Yesterday === -999) row.Yesterday = row.Today;
+        if (row.Yesterday === -999) row.Yesterday = row.FiveDaysAgo;
+        if (row.FiveDaysAgo === -999) row.FiveDaysAgo = row.Yesterday;
+        if (row.FiveDaysAgo === -999) row.FiveDaysAgo = row.Today;
+
+        // Zero-Out Final
+        if (row.Today === -999) row.Today = 0;
+        if (row.Yesterday === -999) row.Yesterday = 0;
+        if (row.FiveDaysAgo === -999) row.FiveDaysAgo = 0;
+
+        // Color and Math
+        row.OneDayChange = row.Today - row.Yesterday;
+        row.FiveDayChange = row.Today - row.FiveDaysAgo;
+
+        row.TodayColor = rgbToHex(fb(row.Today));
+        row.OneDayColor = rgbToHex(f1(row.OneDayChange));
+        row.FiveDayColor = rgbToHex(f5(row.FiveDayChange));
+        row.elevationColor = rgbToHex(fe(row.elevation));
+
+        // Average SWE Math
+        if (currentSwe !== -999 && histSwe !== null && histSwe > 0) {
+          row.Avg = parseInt((currentSwe / histSwe) * 100);
+          row.avgColor = rgbToHex(fh(row.Avg));
+        } else {
+          row.Avg = null;
+          row.avgColor = "000000";
+        }
+
+        row.DoubleCheck = triplet; // Legacy field match
+        final_data.push(row);
+      }
+
+      const state_data = JSON.stringify(
         GeoJSON.parse(final_data, {
           Point: ["latitude", "longitude"],
         })
       );
 
-      console.log(JSON.stringify(state_data));
+      // console.log(JSON.stringify(state_data));
 
+      // --- 5. WRITE ARTIFACT ---
       if (process.env.LOCAL_WRITE === "1") {
-        // Write to local file instead of S3
         try {
           const currentDir = process.cwd();
           const fullPath = `${currentDir}/${filename}`;
-          console.log(`Attempting to write file to: ${fullPath}`);
-          console.log(`Current working directory: ${currentDir}`);
-          console.log(`LOCAL_WRITE env var: ${process.env.LOCAL_WRITE}`);
-
           fs.writeFileSync(filename, state_data, { encoding: "utf8" });
-
-          // Verify the file was written
           if (fs.existsSync(filename)) {
-            const stats = fs.statSync(filename);
-            console.log(
-              `${state} JSON saved locally as ${filename} (${stats.size} bytes)`
-            );
+            console.log(`${state} JSON saved locally as ${filename} (${fs.statSync(filename).size} bytes)`);
           } else {
             console.error(`File ${filename} was not created successfully`);
           }
         } catch (err) {
           console.error("Failed to write local file:", err);
-          console.error("Error details:", {
-            code: err.code,
-            path: err.path,
-            message: err.message,
-          });
         }
       } else if (process.env.DRY_RUN !== "true") {
         console.log(`Attempting to write ${filename} to S3 bucket ${bucketName}.`);
         try {
-          await s3
-            .putObject({
-              Bucket: bucketName,
-              Key: filename,
-              Body: state_data,
-              ContentType: "application/json",
-            })
-            .promise();
+          await s3.putObject({
+            Bucket: bucketName,
+            Key: filename,
+            Body: state_data,
+            ContentType: "application/json",
+          }).promise();
           console.log(`${state} JSON saved to S3 successfully.`);
         } catch (s3Error) {
           console.error(`Failed to write ${filename} to S3:`, s3Error);
@@ -334,352 +275,23 @@ export async function handler(event, context) {
       } else {
         console.log("DRY_RUN is set. Skipping S3 upload.");
       }
+
     } catch (err) {
       console.error(`Error processing state ${state}:`, err);
     }
   }
 }
 
-async function hasWind(Selected_State) {
-  var wind_stations;
-
-  input =
-    '<?xml version="1.0" encoding="UTF-8"?> ' +
-    '<SOAP-ENV:Envelope xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/" xmlns:q0="http://www.wcc.nrcs.usda.gov/ns/awdbWebService" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"> ' +
-    "  <SOAP-ENV:Body> " +
-    "   <q0:getStations> " +
-    "      <networkCds>SNTL</networkCds> " +
-    "      <stateCds>" +
-    Selected_State +
-    "</stateCds> " +
-    "        <elementCds>WSPDV</elementCds>" +
-    "      <logicalAnd>true</logicalAnd> " +
-    "   </q0:getStations>" +
-    " </SOAP-ENV:Body>" +
-    "</SOAP-ENV:Envelope>";
-
-  //console.log(OneDayAgo.getMonth());
-  var result = await getStations(input)
-  wind_stations = JSON.parse(xmlParser.toJson(result));
-  console.log(wind_stations);
-  wind_stations =
-    wind_stations["soap:Envelope"]["soap:Body"][
-    "ns2:getStationsResponse"
-    ]["return"];
-  return (wind_stations);
-
-
-}
-
-async function getStations(XML_String) {
-  console.log(XML_String)
-  var XML_Instance = await XML_String;
-  const { response } = await soapRequest({
-    url: url,
-    headers: sampleHeaders,
-    xml: XML_Instance
-  });
-  const { headers, body, statusCode } = response;
-  return body;
-}
-
-async function getHourly(XML_String) {
-  var XML_Instance = await XML_String;
-  const { response } = await soapRequest({
-    url: HourlyUrl,
-    headers: {
-      ...sampleHeaders,
-    },
-    xml: XML_Instance
-  });
-  const { headers, body, statusCode } = response;
-  return body;
-}
-
-async function getMeta(XML_String) {
-  var XML_Instance = await XML_String;
-  const { response } = await soapRequest({
-    url: MetaUrl,
-    headers: {
-      ...sampleHeaders,
-    },
-    xml: XML_Instance
-  });
-  const { headers, body, statusCode } = response;
-  return body;
-}
-
-async function getHistorical(XML_String) {
-  var XML_Instance = await XML_String;
-  const { response } = await soapRequest({
-    url: HistoricalUrl,
-    headers: {
-      ...sampleHeaders,
-    },
-    xml: XML_Instance
-  });
-  const { headers, body, statusCode } = response;
-  return body;
-}
-
-function getHourlyXML2(StartTime, EndTime, Stations, Element) {
-  //EndTime = EndTime + new Date(1*24*60*60*1000);
-  var StartString =
-    StartTime.getFullYear() +
-    "-" +
-    (StartTime.getMonth() > 8
-      ? StartTime.getMonth() + 1
-      : "0" + (StartTime.getMonth() + 1)) +
-    "-" +
-    StartTime.getDate();
-  var EndString =
-    EndTime.getFullYear() +
-    "-" +
-    (EndTime.getMonth() > 8
-      ? EndTime.getMonth() + 1
-      : "0" + (EndTime.getMonth() + 1)) +
-    "-" +
-    (EndTime.getDate() > 9 ? EndTime.getDate() : "0" + EndTime.getDate());
-  var input2;
-  input2 =
-    '<?xml version="1.0" encoding="UTF-8"?> ' +
-    '<SOAP-ENV:Envelope xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/" xmlns:q0="http://www.wcc.nrcs.usda.gov/ns/awdbWebService" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"> ' +
-    "  <SOAP-ENV:Body> " +
-    "       <q0:getHourlyData> ";
-
-  var j;
-  try {
-    for (j = 0; j < Stations.length; j++) {
-      input2 = input2 + "<stationTriplets>" + Stations[j] + "</stationTriplets>";
-    }
-  } catch (err) {
-    //}
-    console.log("No Object From Stations", err.message);
-  }
-
-  input2 =
-    input2 +
-    "<elementCd>" +
-    Element +
-    "</elementCd> " +
-    "      <ordinal>1</ordinal> " +
-    "   <beginDate>" +
-    StartString +
-    "</beginDate> " +
-    "    <endDate>" +
-    EndString +
-    "</endDate> " +
-    "   </q0:getHourlyData>" +
-    " </SOAP-ENV:Body>" +
-    "</SOAP-ENV:Envelope>";
-  //console.log(input2);
-  return input2;
-}
-function getHistoricalXML(StartTime, EndTime, Stations, Element) {
-  //////  <?xml version="1.0" encoding="UTF-8"?>
-  //////<SOAP-ENV:Envelope xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/" xmlns:q0="http://www.wcc.nrcs.usda.gov/ns/awdbWebService" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
-  //////  <SOAP-ENV:Body>
-  //////    <q0:getAveragesData>
-  //////      <stationTriplets>1033:CO:SNTL</stationTriplets>
-  //////      <elementCd>SNWD</elementCd>
-  //////      <duration>DAILY</duration>
-  //////      <getFlags>true</getFlags>
-  //////      <beginMonth>1</beginMonth>
-  //////      <beginDay>15</beginDay>
-  //////      <endMonth>2</endMonth>
-  //////      <endDay>28</endDay>
-  //////    </q0:getAveragesData>
-  //////  </SOAP-ENV:Body>
-  //////</SOAP-ENV:Envelope>
-
-  //EndTime = EndTime + new Date(1*24*60*60*1000);
-  var StartMonth =
-    StartTime.getMonth() > 8
-      ? StartTime.getMonth() + 1
-      : "0" + (StartTime.getMonth() + 1);
-  var StartDay =
-    StartTime.getDate() > 9 ? StartTime.getDate() : "0" + StartTime.getDate();
-  var EndMonth =
-    EndTime.getMonth() > 8
-      ? EndTime.getMonth() + 1
-      : "0" + (EndTime.getMonth() + 1);
-  var EndDay =
-    EndTime.getDate() > 9 ? EndTime.getDate() : "0" + EndTime.getDate();
-  var input2;
-  input2 =
-    '<?xml version="1.0" encoding="UTF-8"?> ' +
-    '<SOAP-ENV:Envelope xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/" xmlns:q0="http://www.wcc.nrcs.usda.gov/ns/awdbWebService" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"> ' +
-    "  <SOAP-ENV:Body> " +
-    "       <q0:getAveragesData> ";
-
-  var j;
-  try {
-    for (j = 0; j < Stations.length; j++) {
-      input2 =
-        input2 + "<stationTriplets>" + Stations[j] + "</stationTriplets>";
-    }
-  } catch (err) {
-
-    console.log("No Object From Stations", err.message);
-  }
-
-  input2 =
-    input2 +
-    "<elementCd>" +
-    Element +
-    "</elementCd> " +
-    "<duration>DAILY</duration>" +
-    "<getFlags>true</getFlags>" +
-    "<beginMonth>" +
-    StartMonth +
-    "</beginMonth>" +
-    "<beginDay>" +
-    StartDay +
-    "</beginDay>" +
-    "<endMonth>" +
-    EndMonth +
-    "</endMonth>" +
-    "<endDay>" +
-    EndDay +
-    "</endDay>" +
-    "</q0:getAveragesData>" +
-    "</SOAP-ENV:Body>" +
-    "</SOAP-ENV:Envelope>";
-  // console.log(input2);
-  return input2;
-}
-function getMetaXML(Stations) {
-  var input2;
-  console.log("Stations Received:", Stations);
-  /*
-  <?xml version="1.0" encoding="UTF-8"?>
-<SOAP-ENV:Envelope xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/" xmlns:q0="http://www.wcc.nrcs.usda.gov/ns/awdbWebService" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
-  <SOAP-ENV:Body>
-    <q0:getStationMetadata>
-      <stationTriplet>1269:UT:SNTL</stationTriplet>
-    </q0:getStationMetadata>
-  </SOAP-ENV:Body>
-</SOAP-ENV:Envelope>
-  */
-  input2 =
-    '<?xml version="1.0" encoding="UTF-8"?> ' +
-    '<SOAP-ENV:Envelope xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/" xmlns:q0="http://www.wcc.nrcs.usda.gov/ns/awdbWebService" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">' +
-    "  <SOAP-ENV:Body> " +
-    "       <q0:getStationMetadataMultiple> ";
-
-  var j;
-  try {
-    for (j = 0; j < Stations.length; j++) {
-      input2 =
-        input2 + "<stationTriplets>" + Stations[j] + "</stationTriplets>";
-    }
-  } catch (err) {
-    console.log("No Object From Stations", err.message);
-  }
-
-  input2 =
-    input2 +
-    "   </q0:getStationMetadataMultiple>" +
-    " </SOAP-ENV:Body>" +
-    "</SOAP-ENV:Envelope>";
-
-  return input2;
-}
-
-function get_best_data_from_object(Object) {
-  var ccc = 0;
-  var Return_Object = [];
-  for (ccc = 0; ccc < Object.length; ccc++) {
-    Return_Object[ccc] = -999;
-    if (ccc in Object) {
-      if (["values"] in Object[ccc]) {
-        if (["value"] in Object[ccc]["values"]) {
-          //console.log(Object[ccc]["values"]["value"]);
-          Return_Object[ccc] = parseInt(Object[ccc]["values"]["value"]);
-        } else {
-          //if multiple values
-          var ii;
-          //console.log(Object[cc]["values"].length);
-          var Found_Good_Data = false;
-
-          for (ii = Object[ccc]["values"].length; ii > 0; ii--) {
-            if (Found_Good_Data == false) {
-              if (typeof Object[ccc]["values"][ii - 1] !== "undefined") {
-                if (Object[ccc]["values"][ii - 1]["flag"] == "V") {
-                  Return_Object[ccc] = parseInt(
-                    Object[ccc]["values"][ii - 1]["value"]
-                  );
-                  Found_Good_Data = true;
-                } else if (Return_Object[ccc] == -999) {
-                  console.log("Replaced");
-                  Return_Object[ccc] = parseInt(
-                    Object[ccc]["values"][ii - 1]["value"]
-                  );
-                }
-              } else {
-                console.log("No Flag", Object[ccc]["values"][ii - 1]);
-              }
-            } else {
-              //console.log("Kept Best Value")
-            }
-          }
-        }
-      }
-    }
-  }
-
-  //console.log(Return_Object);
-  return Return_Object;
-}
-
-function get_best_hist_data_from_object(Object) {
-  var ccc = 0;
-  var Return_Object = [];
-  for (ccc = 0; ccc < Object.length; ccc++) {
-    if (ccc in Object) {
-      if (["values"] in Object[ccc]) {
-
-        //if multiple values
-        var ii;
-        //console.log(Object[cc]["values"].length);
-        var total = 0;
-        // if (Object[ccc]["flags"][0] == "U") {
-        for (ii = Object[ccc]["values"].length; ii > 0; ii--) {
-
-
-          total = total + parseInt(
-            Object[ccc]["values"][ii - 1]
-          );
-          //  }
-
-        }
-
-        Return_Object.push(total / Object[ccc]["values"].length)
-
-      } else {
-        Return_Object.push(null)
-      }
-    }
-  }
-
-  //console.log(Return_Object);
-  return Return_Object;
-}
 function componentToHex(c) {
-  //var hex = c.toString(16);
-  // console.log(hex);
   return ("0" + Number(c).toString(16)).slice(-2).toUpperCase();
-
-  //return hex.length == 1 ? "0" + hex : hex;
 }
 
 function rgbToHex(o) {
-  var r, g, b, a;
+  var r, g, b;
   o = o["_rgb"];
   r = o[0];
   g = o[1];
   b = o[2];
-  //console.log(r)
   return (
     componentToHex(parseInt(r)) +
     componentToHex(parseInt(g)) +

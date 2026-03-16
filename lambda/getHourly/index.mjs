@@ -1,13 +1,3 @@
-import xmlParser from "xml2json";
-import soapRequest from "easy-soap-request";
-
-const HourlyUrl = "https://wcc.sc.egov.usda.gov/awdbWebService/services?";
-const sampleHeaders = {
-  "user-agent": "sampleTest",
-  "Content-Type": "text/xml;charset=UTF-8",
-  soapAction: "",
-};
-
 export const handler = async (event) => {
   try {
     const site = event.pathParameters?.stationTriplet;
@@ -21,33 +11,53 @@ export const handler = async (event) => {
       };
     }
 
-    const EndTime = new Date();
-    const StartTime = new Date();
-    StartTime.setDate(EndTime.getDate() - 7);
-    EndTime.setDate(EndTime.getDate() + 1);
-
     console.log(`Fetching data for site: ${site}, element: ${element}`);
-    const input = getHourlyXML2(StartTime, EndTime, site, element);
 
-    const todayXML = await getHourly(input);
-    let todayData = JSON.parse(xmlParser.toJson(todayXML));
-    todayData =
-      todayData["soap:Envelope"]["soap:Body"]["ns2:getHourlyDataResponse"]?.[
-        "return"
-      ]?.values;
+    // Compute explicit dates for a 7-day lookback (the REST API doesn't support relative dates like -7)
+    const endDate = new Date();
+    const beginDate = new Date(endDate.getTime() - 7 * 24 * 60 * 60 * 1000);
+    const fmt = d => d.toISOString().slice(0, 10); // YYYY-MM-DD
 
-    const corsHost = event.stageVariables?.cors_host || "*";
+    // NRCS REST API URL for Hourly Data (last 7 days to present)
+    const restUrl = `https://wcc.sc.egov.usda.gov/awdbRestApi/services/v1/data?stationTriplets=${site}&elements=${element}&duration=HOURLY&beginDate=${fmt(beginDate)}&endDate=${fmt(endDate)}`;
+
+    const response = await fetch(restUrl, {
+      method: "GET",
+      headers: {
+        "Accept": "application/json",
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36"
+      }
+    });
+
+    if (!response.ok) {
+      console.error(`NRCS API error: ${response.status} ${response.statusText}`);
+      throw new Error(`NRCS API returned status ${response.status}`);
+    }
+
+    const json = await response.json();
+    let formattedValues = [];
+
+    // The legacy app.js frontend expects: [{ dateTime: 'YYYY-MM-DD HH:mm', value: 43 }, ...]
+    // The new REST API returns: [{ stationTriplet: '...', data: [{ values: [{ date: '...', value: 43 }] }] }]
+    if (json && json.length > 0 && json[0].data && json[0].data.length > 0) {
+      const rawValues = json[0].data[0].values || [];
+      formattedValues = rawValues.map(v => ({
+        dateTime: v.date.replace(" ", " "), // Normalize if necessary
+        value: v.value
+      }));
+    }
 
     return {
       statusCode: 200,
       headers: {
         "Content-Type": "application/json",
         "Access-Control-Allow-Headers": "*",
-        "Access-Control-Allow-Origin": event.stageVariables?.corshost,
+        "Access-Control-Allow-Origin": event.stageVariables?.corshost || "*",
         "Access-Control-Allow-Methods": "OPTIONS,POST,GET",
       },
-      body: JSON.stringify(todayData || {}),
+      body: JSON.stringify(formattedValues),
     };
+
   } catch (error) {
     console.error("Error in handler:", error);
     return {
@@ -60,69 +70,3 @@ export const handler = async (event) => {
     };
   }
 };
-
-function getHourlyXML2(StartTime, EndTime, Stations, Element) {
-  //EndTime = EndTime + new Date(1*24*60*60*1000);
-  console.log("Element", Element);
-
-  const StartString =
-    StartTime.getFullYear() +
-    "-" +
-    (StartTime.getMonth() > 8
-      ? StartTime.getMonth() + 1
-      : "0" + (StartTime.getMonth() + 1)) +
-    "-" +
-    StartTime.getDate();
-  const EndString =
-    EndTime.getFullYear() +
-    "-" +
-    (EndTime.getMonth() > 8
-      ? EndTime.getMonth() + 1
-      : "0" + (EndTime.getMonth() + 1)) +
-    "-" +
-    (EndTime.getDate() > 9 ? EndTime.getDate() : "0" + EndTime.getDate());
-  let input2;
-  input2 =
-    '<?xml version="1.0" encoding="UTF-8"?> ' +
-    '<SOAP-ENV:Envelope xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/" xmlns:q0="http://www.wcc.nrcs.usda.gov/ns/awdbWebService" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"> ' +
-    "  <SOAP-ENV:Body> " +
-    "       <q0:getHourlyData> ";
-
-  try {
-    //for (j = 0; j < Stations.length; j++) {
-    input2 = input2 + "<stationTriplets>" + Stations + "</stationTriplets>";
-  } catch (err) {
-    //}
-    console.log("No Object From Stations", err.message);
-  }
-
-  input2 =
-    input2 +
-    "<elementCd>" +
-    Element +
-    "</elementCd> " +
-    "      <ordinal>1</ordinal> " +
-    "   <beginDate>" +
-    StartString +
-    "</beginDate> " +
-    "    <endDate>" +
-    EndString +
-    "</endDate> " +
-    "   </q0:getHourlyData>" +
-    " </SOAP-ENV:Body>" +
-    "</SOAP-ENV:Envelope>";
-  console.log(input2);
-  return input2;
-}
-
-async function getHourly(XML_String) {
-  const XML_Instance = await XML_String;
-  //  console.log(XML_Instance);
-  const { response } = await soapRequest({
-    url: HourlyUrl,
-    headers: sampleHeaders,
-    xml: XML_Instance,
-  });
-  const { body } = response;
-  return body;
-}
